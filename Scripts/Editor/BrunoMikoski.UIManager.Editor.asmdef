@@ -1,0 +1,19 @@
+{
+    "name": "BrunoMikoski.UIManager.Editor",
+    "references": [
+        "GUID:70b79735e0c73474d9fb3d79235343ed",
+        "GUID:435719c11c6f941d98c6110929b03789",
+        "GUID:d1e49fb10066546359f6ac0181f3f870"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

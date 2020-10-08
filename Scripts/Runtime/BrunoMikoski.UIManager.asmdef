@@ -1,7 +1,8 @@
 {
     "name": "BrunoMikoski.UIManager",
     "references": [
-        "GUID:435719c11c6f941d98c6110929b03789"
+        "GUID:435719c11c6f941d98c6110929b03789",
+        "GUID:df2fb7f02faf3bb4b9bc8f3372411e3d"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

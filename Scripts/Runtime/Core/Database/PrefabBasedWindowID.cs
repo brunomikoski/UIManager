@@ -11,5 +11,6 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private bool instantiateOnInitialization = true;
         public bool InstantiateOnInitialization => instantiateOnInitialization;
+
     }
 }

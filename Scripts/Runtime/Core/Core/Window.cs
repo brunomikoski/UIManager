@@ -1,9 +1,9 @@
+using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
+    [RequireComponent(typeof(Canvas), typeof(CanvasGroup))]
     public partial class Window : MonoBehaviour
     {
         private RectTransform cachedRectTransform;
@@ -16,25 +16,77 @@ namespace BrunoMikoski.UIManager
                 return cachedRectTransform;
             }
         }
-        
-        private WindowManager windowManager;
-        private WindowID windowID;
 
-
-        public void Initialize(WindowManager windowManager, WindowID windowID)
+        private CanvasGroup cachedCanvasGroup;
+        public CanvasGroup CanvasGroup
         {
-            this.windowManager = windowManager;
+            get
+            {
+                if (cachedCanvasGroup == null)
+                    cachedCanvasGroup = GetComponent<CanvasGroup>();
+                return cachedCanvasGroup;
+            }
+        }
+
+        private WindowsManager windowsManager;
+        private WindowID windowID;
+        public WindowID WindowID => windowID;
+
+        private bool isOpen;
+        public bool IsOpen => isOpen;
+
+
+        public void Initialize(WindowsManager windowsManager, WindowID windowID)
+        {
+            this.windowsManager = windowsManager;
             this.windowID = windowID;
             DispatchWindowInitialized();
         }
-        
-        private void DispatchWindowInitialized()
+
+        private IEnumerator OpenEnumerator()
         {
-            IWindowInitialized[] listeners = gameObject.GetComponentsInChildren<IWindowInitialized>(true);
-            for (int i = 0; i < listeners.Length; i++)
-            {
-                listeners[i].OnWindowInitialized();
-            }
+            DispatchOnBeforeWindowOpen();
+            if (windowID.InTransition != null)
+                windowID.InTransition.BeforeTransition(this);
+            
+            gameObject.SetActive(true);
+
+            if (windowID.InTransition != null)
+                yield return windowID.InTransition.ExecuteEnumerator(this);
+            DispatchOnAfterWindowOpen();
+        }
+
+        private IEnumerator CloseEnumerator()
+        {
+            DispatchOnBeforeWindowClose();
+
+            if (windowID.OutTransition != null)
+                windowID.OutTransition.BeforeTransition(this);
+            
+            if (windowID.OutTransition != null)
+                yield return windowID.OutTransition.ExecuteEnumerator(this);
+            
+            gameObject.SetActive(false);
+            DispatchOnAfterWindowClose();
+
+        }
+
+        public void Close()
+        {
+            if (!isOpen)
+                return;
+            
+            isOpen = false;
+            windowsManager.StartCoroutine(CloseEnumerator());
+        }
+
+        public void Open()
+        {
+            if (isOpen)
+                return;
+            
+            isOpen = true;
+            windowsManager.StartCoroutine(OpenEnumerator());
         }
     }
 }

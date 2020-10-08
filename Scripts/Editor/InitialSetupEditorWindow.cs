@@ -1,4 +1,3 @@
-using System;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEditor;
 using UnityEngine;
@@ -61,24 +60,30 @@ namespace BrunoMikoski.UIManager
                 "GroupIDs");
             groupIDs.AddNew("Main");
             
+            Transitions transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
+                "Transitions");
             
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(windowIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(layerIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(groupIDs, true);
+            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(transitions, true);
 
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(windowIDs, "WindowIDStatic");
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(layerIDs, "LayerIDStatic");
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(groupIDs, "GroupIDStatic");
+            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(transitions, "TransitionStatic");
             
             string generatedCodeFolderPath = AssetDatabase.GetAssetPath(GeneratedCodeFolder);
             
             ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(windowIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(layerIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(groupIDs, true);
+            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(transitions, true);
             
             ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(windowIDs, generatedCodeFolderPath);
             ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(layerIDs, generatedCodeFolderPath);
             ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(groupIDs, generatedCodeFolderPath);
+            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(transitions, generatedCodeFolderPath);
             
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();

@@ -12,5 +12,27 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private GroupID groupID;
         public GroupID GroupID => groupID;
+
+        [Header("Transitions")] 
+        [SerializeField]
+        private TransitionBase inTransition;
+        public TransitionBase InTransition => inTransition;
+
+        [SerializeField] 
+        private TransitionBase outTransition;
+        public TransitionBase OutTransition => outTransition;
+
+
+        private WindowsManager windowsManager;
+        
+        public void SetWindowsManager(WindowsManager windowsManager)
+        {
+            this.windowsManager = windowsManager;
+        }
+
+        public void Open()
+        {
+            this.windowsManager.Open(this);
+        }
     }
 }

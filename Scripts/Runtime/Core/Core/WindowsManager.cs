@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace BrunoMikoski.UIManager
 {
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
-    public class WindowsManager : MonoBehaviour
+    public partial class WindowsManager : MonoBehaviour
     {
         [SerializeField]
         private WindowID initialWindowID;
@@ -81,8 +81,9 @@ namespace BrunoMikoski.UIManager
             
             windowInstance.RectTransform.SetAsLastSibling();
             windowInstance.Open();
-            windowInstance.OnWindowFocused();
             history.Add(windowID);
+            DispatchWindowEvent(WindowEvent.OnOpen, windowID);
+            SetFocusedWindow(windowInstance);
         }
         
         private void SendToBackground(WindowID windowID)
@@ -98,7 +99,8 @@ namespace BrunoMikoski.UIManager
         private void SendToBackground(Window window)
         {
             window.OnSentToBackground();
-        }
+            DispatchWindowEvent(WindowEvent.OnEnterBackground, window.WindowID);
+       }
 
         public void CloseLast()
         {
@@ -124,6 +126,7 @@ namespace BrunoMikoski.UIManager
         private void Close(Window window)
         {
             window.Close();
+            DispatchWindowEvent(WindowEvent.OnClose, window.WindowID);
         }
         
         private void Close(WindowID windowID)
@@ -135,6 +138,24 @@ namespace BrunoMikoski.UIManager
                 return;
             
             Close(window);
+
+            if (windowID.LayerID.Behaviour == LayerBehaviour.Additive)
+                UpdateFocusedWindow(windowID.LayerID);
+        }
+
+        private void UpdateFocusedWindow(LayerID windowIDLayerID)
+        {
+            if (!TryGetOpenWindowsOfLayer(windowIDLayerID, out List<Window> openWindows)) 
+                return;
+            
+            Window focusedWindowInstance = openWindows.OrderBy(window => window.RectTransform.GetSiblingIndex()).Last();
+            SetFocusedWindow(focusedWindowInstance);
+        }
+
+        private void SetFocusedWindow(Window targetWindow)
+        {
+            targetWindow.OnWindowFocused();
+            DispatchWindowEvent(WindowEvent.OnBecomeFocused, targetWindow.WindowID);
         }
 
         private bool IsWindowOpen(WindowID windowID)

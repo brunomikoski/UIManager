@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 
@@ -34,8 +33,7 @@ namespace BrunoMikoski.UIManager
                 Tween tween = targetWindow.transform.DOScale(toScale, duration).Pause().SetEase(ease).SetAutoKill(false);
                 tween.Complete();
                 tween.PlayBackwards();
-                yield return new WaitForSeconds(duration);
-                
+                yield return tween.WaitForRewindEnumerator();
             }
         }
     }

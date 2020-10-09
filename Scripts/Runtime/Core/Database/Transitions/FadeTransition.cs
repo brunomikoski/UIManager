@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class FadeTransition : TransitionBase
+    public class FadeTransition : AnimatedTransition
     {
         [SerializeField] 
         private float fromValue = 0;
@@ -17,12 +17,13 @@ namespace BrunoMikoski.UIManager
 
         public override void BeforeTransition(Window targetWindow)
         {
-            targetWindow.CanvasGroup.alpha = 0;
+            targetWindow.CanvasGroup.alpha = fromValue;
         }
 
-        public override IEnumerator ExecuteEnumerator(Window targetWindow)
+        public override IEnumerator ExecuteEnumerator(Window targetWindow, bool isBackwards)
         {
-            yield return targetWindow.CanvasGroup.DOFade(toValue, duration).SetEase(ease)
+            yield return targetWindow.CanvasGroup.DOFade(toValue, duration)
+                .SetEase(ease)
                 .WaitForTweenCompletionEnumerator();
         }
     }

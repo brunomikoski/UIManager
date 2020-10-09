@@ -1,17 +1,24 @@
-﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    public class OpenWindowOnClick : MonoBehaviour
+    public class GoBackOnClick : MonoBehaviour
     {
         [SerializeField]
         private Button button;
-
-        [SerializeField] 
-        private WindowID targetWindow;
-
+        
+        private Window cachedParentWindow;
+        private Window ParentWindow
+        {
+            get
+            {
+                if (cachedParentWindow == null)
+                    cachedParentWindow = GetComponentInParent<Window>();
+                return cachedParentWindow;
+            }
+        }
+        
         private void Reset()
         {
             button = GetComponent<Button>();
@@ -30,7 +37,7 @@ namespace BrunoMikoski.UIManager
 
         private void OnClick()
         {
-            targetWindow.Open();
+            ParentWindow.WindowsManager.Back();
         }
     }
 }

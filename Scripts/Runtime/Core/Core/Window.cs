@@ -6,6 +6,9 @@ namespace BrunoMikoski.UIManager
     [RequireComponent(typeof(Canvas), typeof(CanvasGroup))]
     public partial class Window : MonoBehaviour
     {
+        [SerializeField]
+        private bool cacheInterfacesInstance = true;
+        
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
         {
@@ -29,6 +32,8 @@ namespace BrunoMikoski.UIManager
         }
 
         private WindowsManager windowsManager;
+        public WindowsManager WindowsManager => windowsManager;
+
         private WindowID windowID;
         public WindowID WindowID => windowID;
 
@@ -47,12 +52,20 @@ namespace BrunoMikoski.UIManager
         {
             DispatchOnBeforeWindowOpen();
             if (windowID.InTransition != null)
-                windowID.InTransition.BeforeTransition(this);
+            {
+                if (windowID.InTransition is AnimatedTransition animatedTransition)
+                    animatedTransition.BeforeTransition(this);
+            }
             
             gameObject.SetActive(true);
 
             if (windowID.InTransition != null)
-                yield return windowID.InTransition.ExecuteEnumerator(this);
+            {
+                if (windowID.InTransition is AnimatedTransition animatedTransition)
+                {
+                    yield return animatedTransition.ExecuteEnumerator(this, false);
+                }
+            }
             DispatchOnAfterWindowOpen();
         }
 
@@ -61,10 +74,25 @@ namespace BrunoMikoski.UIManager
             DispatchOnBeforeWindowClose();
 
             if (windowID.OutTransition != null)
-                windowID.OutTransition.BeforeTransition(this);
-            
+            {
+                if (windowID.OutTransition is AnimatedTransition animatedTransition)
+                    animatedTransition.BeforeTransition(this);
+            }
+
             if (windowID.OutTransition != null)
-                yield return windowID.OutTransition.ExecuteEnumerator(this);
+            {
+                if (windowID.OutTransition is AnimatedTransition animatedTransition)
+                {
+                    yield return animatedTransition.ExecuteEnumerator(this, false);
+                }
+                else if (windowID.OutTransition is ReverseInTransition reverseInTransition)
+                {
+                    if (windowID.InTransition is AnimatedTransition InAnimatedTransition)
+                    {
+                        yield return InAnimatedTransition.ExecuteEnumerator(this, true);
+                    }
+                }
+            }
             
             gameObject.SetActive(false);
             DispatchOnAfterWindowClose();
@@ -87,6 +115,16 @@ namespace BrunoMikoski.UIManager
             
             isOpen = true;
             windowsManager.StartCoroutine(OpenEnumerator());
+        }
+
+        public void OnSentToBackground()
+        {
+            
+        }
+
+        public void OnWindowFocused()
+        {
+            
         }
     }
 }

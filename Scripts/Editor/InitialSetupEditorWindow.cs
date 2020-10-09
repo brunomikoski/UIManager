@@ -62,6 +62,7 @@ namespace BrunoMikoski.UIManager
             
             Transitions transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
                 "Transitions");
+            transitions.AddNew(typeof(ReverseInTransition), "ReverseInTransition");
             
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(windowIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(layerIDs, true);

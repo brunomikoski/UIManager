@@ -1,49 +1,92 @@
-﻿namespace BrunoMikoski.UIManager
+﻿using System.Collections.Generic;
+
+namespace BrunoMikoski.UIManager
 {
     public partial class Window
     {
+        private List<IOnWindowInitialized> listenersWindowInitialized; 
+        private List<IOnBeforeOpenWindow> listenersBeforeOpenWindow; 
+        private List<IOnAfterWindowOpen> listenersOnAfterWindowOpen; 
+        private List<IOnBeforeWindowClose> listenersOnBeforeWindowClose; 
+        private List<IOnAfterWindowClose> listenersOnAfterWindowClose; 
+        
         private void DispatchWindowInitialized()
         {
-            IWindowInitialized[] listeners = gameObject.GetComponentsInChildren<IWindowInitialized>(true);
-            for (int i = 0; i < listeners.Length; i++)
+            if (cacheInterfacesInstance && listenersWindowInitialized != null)
+                return;
+
+            if (listenersWindowInitialized == null)
+                listenersWindowInitialized = new List<IOnWindowInitialized>();
+            
+            gameObject.GetComponentsInChildren(true, listenersWindowInitialized);
+
+            for (int i = 0; i < listenersWindowInitialized.Count; i++)
             {
-                listeners[i].OnWindowInitialized();
+                listenersWindowInitialized[i].OnWindowInitialized();
             }
         }
 
         private void DispatchOnBeforeWindowOpen()
         {
-            IBeforeOpenWindow[] listeners = gameObject.GetComponentsInChildren<IBeforeOpenWindow>(true);
-            for (int i = 0; i < listeners.Length; i++)
+            if (cacheInterfacesInstance && listenersBeforeOpenWindow != null)
+                return;
+
+            if (listenersBeforeOpenWindow == null)
+                listenersBeforeOpenWindow = new List<IOnBeforeOpenWindow>();
+            
+            gameObject.GetComponentsInChildren(true, listenersBeforeOpenWindow);
+
+            for (int i = 0; i < listenersBeforeOpenWindow.Count; i++)
             {
-                listeners[i].OnBeforeOpenWindow();
+                listenersBeforeOpenWindow[i].OnBeforeOpenWindow();
             }
         }
         
         private void DispatchOnAfterWindowOpen()
         {
-            IOnAfterWindowOpen[] listeners = gameObject.GetComponentsInChildren<IOnAfterWindowOpen>(true);
-            for (int i = 0; i < listeners.Length; i++)
+            if (cacheInterfacesInstance && listenersOnAfterWindowOpen != null)
+                return;
+
+            if (listenersOnAfterWindowOpen == null)
+                listenersOnAfterWindowOpen = new List<IOnAfterWindowOpen>();
+            
+            gameObject.GetComponentsInChildren(true, listenersOnAfterWindowOpen);
+
+            for (int i = 0; i < listenersOnAfterWindowOpen.Count; i++)
             {
-                listeners[i].OnAfterWindowOpen();
+                listenersOnAfterWindowOpen[i].OnAfterWindowOpen();
             }
         }
         
         private void DispatchOnBeforeWindowClose()
         {
-            IOnBeforeWindowClose[] listeners = gameObject.GetComponentsInChildren<IOnBeforeWindowClose>(true);
-            for (int i = 0; i < listeners.Length; i++)
+            if (cacheInterfacesInstance && listenersOnBeforeWindowClose != null)
+                return;
+
+            if (listenersOnBeforeWindowClose == null)
+                listenersOnBeforeWindowClose = new List<IOnBeforeWindowClose>();
+
+            gameObject.GetComponentsInChildren(true, listenersOnBeforeWindowClose);
+
+            for (int i = 0; i < listenersOnBeforeWindowClose.Count; i++)
             {
-                listeners[i].OnBeforeWindowClose();
+                listenersOnBeforeWindowClose[i].OnBeforeWindowClose();
             }
         }
         
         private void DispatchOnAfterWindowClose()
         {
-            IOnAfterWindowClose[] listeners = gameObject.GetComponentsInChildren<IOnAfterWindowClose>(true);
-            for (int i = 0; i < listeners.Length; i++)
+            if (cacheInterfacesInstance && listenersOnAfterWindowClose != null)
+                return;
+            
+            if (listenersOnAfterWindowClose == null)
+                listenersOnAfterWindowClose = new List<IOnAfterWindowClose>();
+            
+            gameObject.GetComponentsInChildren(true, listenersOnAfterWindowClose);
+
+            for (int i = 0; i < listenersOnAfterWindowClose.Count; i++)
             {
-                listeners[i].OnAfterWindowClose();
+                listenersOnAfterWindowClose[i].OnAfterWindowClose();
             }
         }
     }

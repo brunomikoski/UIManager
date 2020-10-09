@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
@@ -11,6 +10,9 @@ namespace BrunoMikoski.UIManager
     {
         [SerializeField]
         private WindowID initialWindowID;
+
+        [SerializeField]
+        private HierarchyWindowBehaviour hierarchyWindowBehaviour = HierarchyWindowBehaviour.CleanUp;
 
 
         private Dictionary<LayerID, RectTransform> layerToRectTransforms = new Dictionary<LayerID, RectTransform>();
@@ -26,14 +28,28 @@ namespace BrunoMikoski.UIManager
             Initialize();
         }
 
-        public void Initialize()
+        private void Initialize()
         {
             InitializeLayers();
             InitializeGroups();
+            InitializeHierarchy();
+
             InitializeWindows();
 
             if (initialWindowID != null)
                 Open(initialWindowID);
+        }
+
+        private void InitializeHierarchy()
+        {
+            Window[] windows = GetComponentsInChildren<Window>();
+            for (int i = 0; i < windows.Length; i++)
+            {
+                if (hierarchyWindowBehaviour == HierarchyWindowBehaviour.CleanUp)
+                {
+                    Destroy(windows[i].gameObject);
+                }
+            }
         }
 
         public void Open(WindowID windowID)
@@ -41,7 +57,83 @@ namespace BrunoMikoski.UIManager
             if (IsWindowOpen(windowID))
                 return;
             
-            StartCoroutine(OpenEnumerator(windowID));
+            if (!windowIDToWindowInstance.TryGetValue(windowID, out Window windowInstance))
+            {
+                windowInstance = InitializeWindow(windowID);
+            }
+
+            LayerID windowLayer = windowID.LayerID;
+            if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> openWindows))
+            {
+                for (int i = 0; i < openWindows.Count; i++)
+                {
+                    if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
+                    {
+                        Close(openWindows[i]);
+                    }
+                    else if(windowLayer.Behaviour == LayerBehaviour.Additive)
+                    {
+                        SendToBackground(openWindows[i].WindowID);
+                    }
+                }
+            }
+            
+            windowInstance.RectTransform.SetAsLastSibling();
+            windowInstance.Open();
+            windowInstance.OnWindowFocused();
+            history.Add(windowID);
+        }
+        
+        private void SendToBackground(WindowID windowID)
+        {
+            if (!IsWindowOpen(windowID))
+                return;
+
+            if (!windowIDToWindowInstance.TryGetValue(windowID, out Window window)) 
+                return;
+            
+            SendToBackground(window);
+        }
+        private void SendToBackground(Window window)
+        {
+            window.OnSentToBackground();
+        }
+
+        public void CloseLast()
+        {
+            if (history.Count == 0)
+                return;
+
+            WindowID last = history.Last();
+            history.RemoveAt(history.Count - 1);
+            Close(last);
+        }
+
+        public void Back()
+        {
+            CloseLast();
+            if (history.Count == 0)
+                return;
+            
+            WindowID last = history.Last();
+            history.RemoveAt(history.Count - 1);
+            Open(last);
+        }
+        
+        private void Close(Window window)
+        {
+            window.Close();
+        }
+        
+        private void Close(WindowID windowID)
+        {
+            if (!IsWindowOpen(windowID))
+                return;
+
+            if (!windowIDToWindowInstance.TryGetValue(windowID, out Window window)) 
+                return;
+            
+            Close(window);
         }
 
         private bool IsWindowOpen(WindowID windowID)
@@ -49,29 +141,6 @@ namespace BrunoMikoski.UIManager
             if (windowIDToWindowInstance.TryGetValue(windowID, out Window window))
                 return window.IsOpen;
             return false;
-        }
-
-        private IEnumerator OpenEnumerator(WindowID windowID)
-        {
-            LayerID windowLayer = windowID.LayerID;
-            if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
-            {
-                if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> openWindows))
-                {
-                    for (int i = 0; i < openWindows.Count; i++)
-                    {
-                        openWindows[i].Close();
-                        history.Add(openWindows[i].WindowID);
-                    }
-                }
-            }
-
-            if (windowIDToWindowInstance.TryGetValue(windowID, out Window windowInstance))
-            {
-                windowInstance.Open();
-            }
-            
-            yield break;
         }
 
         private bool TryGetOpenWindowsOfLayer(LayerID layerID, out List<Window> resultWindows)
@@ -95,7 +164,7 @@ namespace BrunoMikoski.UIManager
             return resultWindows.Count > 0;
         }
 
-        private bool TryGetOpenWindowOfLayer(LayerID layerID, out Window resultWindow)
+        private bool TryGetFirstOpenWindowOfLayer(LayerID layerID, out Window resultWindow)
         {
             if (TryGetOpenWindowsOfLayer(layerID, out List<Window> windows))
             {
@@ -150,20 +219,23 @@ namespace BrunoMikoski.UIManager
 
             for (int i = 0; i < windows.Count; i++)
             {
-                if (windows[i] is PrefabBasedWindowID prefabBasedWindow)
-                {
-                    if (!prefabBasedWindow.InstantiateOnInitialization)
-                        continue;
-
-                    InitializeWindow(prefabBasedWindow);
-                }
+                InitializeWindow(windows[i]);
             }
         }
 
-        private void InitializeWindow(PrefabBasedWindowID windowID)
+        private Window InitializeWindow(WindowID windowID)
+        {
+            if (windowID is PrefabBasedWindowID prefabBasedWindowID)
+                return InitializeWindow(prefabBasedWindowID);
+            return null;
+        }
+
+        private Window InitializeWindow(PrefabBasedWindowID windowID)
         {
             if (windowIDToWindowInstance.ContainsKey(windowID))
-                return;
+            {
+                return windowIDToWindowInstance[windowID];
+            }
             
             RectTransform targetLayer = GetParentForLayer(windowID.LayerID);
 
@@ -181,6 +253,7 @@ namespace BrunoMikoski.UIManager
             
             
             windowID.SetWindowsManager(this);
+            return windowInstance;
         }
 
         private RectTransform GetParentForLayer(LayerID layerID)

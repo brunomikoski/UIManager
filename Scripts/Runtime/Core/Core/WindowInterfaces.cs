@@ -1,11 +1,11 @@
 namespace BrunoMikoski.UIManager
 {
-    public interface IWindowInitialized
+    public interface IOnWindowInitialized
     {
         void OnWindowInitialized();
     }
 
-    public interface IBeforeOpenWindow
+    public interface IOnBeforeOpenWindow
     {
         void OnBeforeOpenWindow();
     }

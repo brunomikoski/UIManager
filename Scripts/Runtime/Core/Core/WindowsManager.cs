@@ -2,10 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    [RequireComponent(typeof(Canvas))]
+    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
     public class WindowsManager : MonoBehaviour
     {
         [SerializeField]

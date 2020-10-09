@@ -77,6 +77,13 @@ namespace BrunoMikoski.UIManager
             {
                 if (windowID.OutTransition is AnimatedTransition animatedTransition)
                     animatedTransition.BeforeTransition(this);
+                else if (windowID.OutTransition is ReverseInTransition)
+                {
+                    if (windowID.InTransition is AnimatedTransition InAnimatedTransition)
+                    {
+                        InAnimatedTransition.BeforeTransition(this);
+                    }    
+                }
             }
 
             if (windowID.OutTransition != null)
@@ -96,7 +103,6 @@ namespace BrunoMikoski.UIManager
             
             gameObject.SetActive(false);
             DispatchOnAfterWindowClose();
-
         }
 
         public void Close()

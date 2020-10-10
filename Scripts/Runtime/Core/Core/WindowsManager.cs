@@ -63,18 +63,20 @@ namespace BrunoMikoski.UIManager
                 windowInstance = InitializeWindow(windowID);
             }
 
+            List<Window> previouslyOpenWindow = GetAllOpenWindows();
             LayerID windowLayer = windowID.LayerID;
-            if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> openWindows))
+            if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> layerOpenWindows))
             {
-                for (int i = 0; i < openWindows.Count; i++)
+                for (int i = 0; i < layerOpenWindows.Count; i++)
                 {
+                    Window openWindow = layerOpenWindows[i];
                     if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
                     {
-                        Close(openWindows[i]);
+                        Close(openWindow);
                     }
                     else if(windowLayer.Behaviour == LayerBehaviour.Additive)
                     {
-                        SendToBackground(openWindows[i].WindowID);
+                        SendToBackground(openWindow.WindowID);
                     }
                 }
             }
@@ -83,9 +85,27 @@ namespace BrunoMikoski.UIManager
             windowInstance.Open();
             history.Add(windowID);
             DispatchWindowEvent(WindowEvent.OnOpen, windowID);
-            SetFocusedWindow(windowInstance);
+            DispatchTransition(previouslyOpenWindow, windowInstance);
+            UpdateFocusedWindow();
         }
-        
+
+        private List<Window> GetAllOpenWindows()
+        {
+            List<Window> resultOpenWindows = new List<Window>();
+            if (CollectionsRegistry.Instance.TryGetCollection(out LayerIDs layerIDs))
+            {
+                for (int i = layerIDs.Count - 1; i >= 0; i--)
+                {
+                    if (!TryGetOpenWindowsOfLayer(layerIDs[i], out List<Window> openWindows)) 
+                        continue;
+                    
+                    resultOpenWindows.AddRange(openWindows);
+                }
+            }
+
+            return resultOpenWindows;
+        }
+
         private void SendToBackground(WindowID windowID)
         {
             if (!IsWindowOpen(windowID))
@@ -139,17 +159,29 @@ namespace BrunoMikoski.UIManager
             
             Close(window);
 
-            if (windowID.LayerID.Behaviour == LayerBehaviour.Additive)
-                UpdateFocusedWindow(windowID.LayerID);
+            UpdateFocusedWindow();
         }
 
-        private void UpdateFocusedWindow(LayerID windowIDLayerID)
+        private void UpdateFocusedWindow()
         {
-            if (!TryGetOpenWindowsOfLayer(windowIDLayerID, out List<Window> openWindows)) 
-                return;
-            
-            Window focusedWindowInstance = openWindows.OrderBy(window => window.RectTransform.GetSiblingIndex()).Last();
-            SetFocusedWindow(focusedWindowInstance);
+            if(CollectionsRegistry.Instance.TryGetCollection(out LayerIDs layerIDs))
+            {
+                for (int i = layerIDs.Count - 1; i >= 0; i--)
+                {
+                    LayerID layerID = layerIDs[i];
+                    if (TryGetOpenWindowsOfLayer(layerID, out List<Window> openWindows))
+                    {
+                        openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
+                            .CompareTo(windowB.RectTransform.GetSiblingIndex()));
+
+                        for (int j = openWindows.Count - 1; j >= 0; j--)
+                        {
+                            SetFocusedWindow(openWindows[j]);
+                            return;
+                        }
+                    }
+                }
+            }
         }
 
         private void SetFocusedWindow(Window targetWindow)

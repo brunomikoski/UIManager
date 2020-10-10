@@ -23,6 +23,8 @@ namespace BrunoMikoski.UIManager
 
         
         private List<WindowID> history = new List<WindowID>();
+        
+        private Window focusedWindow;
 
         private void Awake()
         {
@@ -65,18 +67,13 @@ namespace BrunoMikoski.UIManager
 
             List<Window> previouslyOpenWindow = GetAllOpenWindows();
             LayerID windowLayer = windowID.LayerID;
-            if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> layerOpenWindows))
+            if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
             {
-                for (int i = 0; i < layerOpenWindows.Count; i++)
+                if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> layerOpenWindows))
                 {
-                    Window openWindow = layerOpenWindows[i];
-                    if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
+                    for (int i = 0; i < layerOpenWindows.Count; i++)
                     {
-                        Close(openWindow);
-                    }
-                    else if(windowLayer.Behaviour == LayerBehaviour.Additive)
-                    {
-                        SendToBackground(openWindow.WindowID);
+                        Close(layerOpenWindows[i]);
                     }
                 }
             }
@@ -105,23 +102,7 @@ namespace BrunoMikoski.UIManager
 
             return resultOpenWindows;
         }
-
-        private void SendToBackground(WindowID windowID)
-        {
-            if (!IsWindowOpen(windowID))
-                return;
-
-            if (!windowIDToWindowInstance.TryGetValue(windowID, out Window window)) 
-                return;
-            
-            SendToBackground(window);
-        }
-        private void SendToBackground(Window window)
-        {
-            window.OnSentToBackground();
-            DispatchWindowEvent(WindowEvent.OnEnterBackground, window.WindowID);
-       }
-
+        
         public void CloseLast()
         {
             if (history.Count == 0)
@@ -134,9 +115,10 @@ namespace BrunoMikoski.UIManager
 
         public void Back()
         {
-            CloseLast();
-            if (history.Count == 0)
+            if (history.Count <= 1)
                 return;
+            
+            CloseLast();
             
             WindowID last = history.Last();
             history.RemoveAt(history.Count - 1);
@@ -147,6 +129,7 @@ namespace BrunoMikoski.UIManager
         {
             window.Close();
             DispatchWindowEvent(WindowEvent.OnClose, window.WindowID);
+            UpdateFocusedWindow();
         }
         
         private void Close(WindowID windowID)
@@ -158,8 +141,6 @@ namespace BrunoMikoski.UIManager
                 return;
             
             Close(window);
-
-            UpdateFocusedWindow();
         }
 
         private void UpdateFocusedWindow()
@@ -186,8 +167,15 @@ namespace BrunoMikoski.UIManager
 
         private void SetFocusedWindow(Window targetWindow)
         {
-            targetWindow.OnWindowFocused();
-            DispatchWindowEvent(WindowEvent.OnBecomeFocused, targetWindow.WindowID);
+            if (focusedWindow != null)
+            {
+                focusedWindow.OnLostFocus();
+                DispatchWindowEvent(WindowEvent.OnLostFocus, focusedWindow.WindowID);
+            }
+
+            focusedWindow = targetWindow;
+            focusedWindow.OnGainFocus();
+            DispatchWindowEvent(WindowEvent.OnGainFocus, focusedWindow.WindowID);
         }
 
         private bool IsWindowOpen(WindowID windowID)
@@ -287,9 +275,7 @@ namespace BrunoMikoski.UIManager
         private Window InitializeWindow(PrefabBasedWindowID windowID)
         {
             if (windowIDToWindowInstance.ContainsKey(windowID))
-            {
                 return windowIDToWindowInstance[windowID];
-            }
             
             RectTransform targetLayer = GetParentForLayer(windowID.LayerID);
 

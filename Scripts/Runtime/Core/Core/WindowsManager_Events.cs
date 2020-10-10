@@ -22,8 +22,8 @@ namespace BrunoMikoski.UIManager
         {
             OnOpen,
             OnClose,
-            OnEnterBackground,
-            OnBecomeFocused
+            OnLostFocus,
+            OnGainFocus
         }
         
         

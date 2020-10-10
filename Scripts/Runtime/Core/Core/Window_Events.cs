@@ -9,6 +9,8 @@ namespace BrunoMikoski.UIManager
         private List<IOnAfterWindowOpen> listenersOnAfterWindowOpen; 
         private List<IOnBeforeWindowClose> listenersOnBeforeWindowClose; 
         private List<IOnAfterWindowClose> listenersOnAfterWindowClose; 
+        private List<IOnGainFocus> listenersOnGainFocus; 
+        private List<IOnLostFocus> listenersOnLostFocus; 
         
         private void DispatchWindowInitialized()
         {
@@ -87,6 +89,38 @@ namespace BrunoMikoski.UIManager
             for (int i = 0; i < listenersOnAfterWindowClose.Count; i++)
             {
                 listenersOnAfterWindowClose[i].OnAfterWindowClose();
+            }
+        }
+
+        private void DispatchOnGainFocus()
+        {
+            if (cacheInterfacesInstance && listenersOnGainFocus != null)
+                return;
+            
+            if (listenersOnGainFocus == null)
+                listenersOnGainFocus = new List<IOnGainFocus>();
+            
+            gameObject.GetComponentsInChildren(true, listenersOnGainFocus);
+
+            for (int i = 0; i < listenersOnGainFocus.Count; i++)
+            {
+                listenersOnGainFocus[i].OnGainFocus();
+            }
+        }
+
+        private void DispatchOnLostFocus()
+        {
+            if (cacheInterfacesInstance && listenersOnLostFocus != null)
+                return;
+            
+            if (listenersOnLostFocus == null)
+                listenersOnLostFocus = new List<IOnLostFocus>();
+            
+            gameObject.GetComponentsInChildren(true, listenersOnLostFocus);
+
+            for (int i = 0; i < listenersOnLostFocus.Count; i++)
+            {
+                listenersOnLostFocus[i].OnLostFocus();
             }
         }
     }

@@ -21,7 +21,8 @@ namespace BrunoMikoski.UIManager
             targetWindow.transform.localScale = fromScale;
         }
 
-        public override IEnumerator ExecuteEnumerator(Window targetWindow, bool isBackwards)
+        public override IEnumerator ExecuteEnumerator(Window targetWindow, TransitionType transitionType,
+            bool isBackwards)
         {
             targetWindow.transform.DOKill();
             if (!isBackwards)
@@ -34,6 +35,7 @@ namespace BrunoMikoski.UIManager
                 tween.Complete();
                 tween.PlayBackwards();
                 yield return tween.WaitForRewindEnumerator();
+                tween.Kill();
             }
         }
     }

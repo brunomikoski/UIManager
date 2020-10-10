@@ -20,11 +20,24 @@ namespace BrunoMikoski.UIManager
             targetWindow.CanvasGroup.alpha = fromValue;
         }
 
-        public override IEnumerator ExecuteEnumerator(Window targetWindow, bool isBackwards)
+        public override IEnumerator ExecuteEnumerator(Window targetWindow, TransitionType transitionType,
+            bool isBackwards)
         {
-            yield return targetWindow.CanvasGroup.DOFade(toValue, duration)
-                .SetEase(ease)
-                .WaitForTweenCompletionEnumerator();
+            if (!isBackwards)
+            {
+                yield return targetWindow.CanvasGroup.DOFade(toValue, duration)
+                    .SetEase(ease)
+                    .WaitForTweenCompletionEnumerator();
+            }
+            else
+            {
+                Tween tween = targetWindow.CanvasGroup.DOFade(toValue, duration)
+                    .SetEase(ease).SetAutoKill(false);
+                tween.Complete();
+                tween.PlayBackwards();
+                yield return tween.WaitForRewindEnumerator();
+                tween.Kill();
+            }
         }
     }
 }

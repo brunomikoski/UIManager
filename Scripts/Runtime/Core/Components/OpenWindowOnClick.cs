@@ -1,34 +1,13 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class OpenWindowOnClick : MonoBehaviour
+    public class OpenWindowOnClick : WindowButtonBase
     {
-        [SerializeField]
-        private Button button;
-
         [SerializeField] 
         private WindowID targetWindow;
 
-        private void Reset()
-        {
-            button = GetComponent<Button>();
-            
-        }
-
-        private void Awake()
-        {
-            button.onClick.AddListener(OnClick);
-        }
-
-        private void OnDestroy()
-        {
-            button.onClick.RemoveListener(OnClick);
-        }
-
-        private void OnClick()
+        protected override void OnClick()
         {
             targetWindow.Open();
         }

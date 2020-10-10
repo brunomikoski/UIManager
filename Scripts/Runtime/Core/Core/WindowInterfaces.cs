@@ -24,4 +24,14 @@ namespace BrunoMikoski.UIManager
     {
         void OnAfterWindowClose();
     }
+    
+    public interface IOnGainFocus
+    {
+        void OnGainFocus();
+    }
+    
+    public interface IOnLostFocus
+    {
+        void OnLostFocus();
+    }
 }

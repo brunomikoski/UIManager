@@ -51,59 +51,30 @@ namespace BrunoMikoski.UIManager
         private IEnumerator OpenEnumerator()
         {
             DispatchOnBeforeWindowOpen();
-            if (windowID.InTransition != null)
-            {
-                if (windowID.InTransition is AnimatedTransition animatedTransition)
-                    animatedTransition.BeforeTransition(this);
-            }
-            
             gameObject.SetActive(true);
 
-            if (windowID.InTransition != null)
-            {
-                if (windowID.InTransition is AnimatedTransition animatedTransition)
-                {
-                    yield return animatedTransition.ExecuteEnumerator(this, false);
-                }
-            }
+            yield return ExecuteTransitionEnumerator(TransitionType.TransitionIn);
             DispatchOnAfterWindowOpen();
         }
-
+       
         private IEnumerator CloseEnumerator()
         {
             DispatchOnBeforeWindowClose();
 
-            if (windowID.OutTransition != null)
-            {
-                if (windowID.OutTransition is AnimatedTransition animatedTransition)
-                    animatedTransition.BeforeTransition(this);
-                else if (windowID.OutTransition is ReverseInTransition)
-                {
-                    if (windowID.InTransition is AnimatedTransition InAnimatedTransition)
-                    {
-                        InAnimatedTransition.BeforeTransition(this);
-                    }    
-                }
-            }
-
-            if (windowID.OutTransition != null)
-            {
-                if (windowID.OutTransition is AnimatedTransition animatedTransition)
-                {
-                    yield return animatedTransition.ExecuteEnumerator(this, false);
-                }
-                else if (windowID.OutTransition is ReverseInTransition reverseInTransition)
-                {
-                    if (windowID.InTransition is AnimatedTransition InAnimatedTransition)
-                    {
-                        yield return InAnimatedTransition.ExecuteEnumerator(this, true);
-                    }
-                }
-            }
-            
+            yield return ExecuteTransitionEnumerator(TransitionType.TransitionOut);
             gameObject.SetActive(false);
             DispatchOnAfterWindowClose();
         }
+        
+        private IEnumerator ExecuteTransitionEnumerator(TransitionType transitionType)
+        {
+            if(!windowID.TryGetTransition(transitionType, out AnimatedTransition animatedTransition, out bool playBackwards))
+                yield break;
+
+            animatedTransition.BeforeTransition(this);
+            yield return animatedTransition.ExecuteEnumerator(this, transitionType, playBackwards);
+        }
+
 
         public void Close()
         {
@@ -123,14 +94,14 @@ namespace BrunoMikoski.UIManager
             windowsManager.StartCoroutine(OpenEnumerator());
         }
 
-        public void OnSentToBackground()
+        public virtual void OnGainFocus()
         {
-            
+            DispatchOnGainFocus();
         }
 
-        public void OnWindowFocused()
+        public void OnLostFocus()
         {
-            
+            DispatchOnLostFocus();
         }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class WindowID : CollectableScriptableObject
+    public abstract class WindowID : CollectableScriptableObject
     {
         [Serializable]
         private struct TransitionData

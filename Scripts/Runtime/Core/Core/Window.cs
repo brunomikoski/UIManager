@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -65,6 +64,7 @@ namespace BrunoMikoski.UIManager
         {
             this.windowsManager = windowsManager;
             this.windowID = windowID;
+            this.windowID.SetWindowsManager(windowsManager);
             DispatchWindowInitialized();
         }
 

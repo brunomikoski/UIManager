@@ -20,10 +20,9 @@ namespace BrunoMikoski.UIManager
         }
 
 
-        private Dictionary<WindowEvent, List<Action<WindowID>>> windowEventToAnyWindowCallbackList = new Dictionary<WindowEvent,List<Action<WindowID>>>();
+        private Dictionary<WindowEvent, List<Action<Window>>> windowEventToAnyWindowCallbackList = new Dictionary<WindowEvent,List<Action<Window>>>();
         private Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>>();
         private List<TransitionEventData> transationEvents = new List<TransitionEventData>();
-
         
         
         public void SubscribeToTransitionEvent(WindowID fromWindowID, WindowID toWindowID, Action callback)
@@ -42,10 +41,10 @@ namespace BrunoMikoski.UIManager
             transationEvents.Remove(result);
         }
         
-        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
+        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<Window> callback)
         {
             if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
-                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<WindowID>>());
+                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<Window>>());
 
             if (windowEventToAnyWindowCallbackList[targetEvent].Contains(callback))
                 return;
@@ -53,7 +52,7 @@ namespace BrunoMikoski.UIManager
             windowEventToAnyWindowCallbackList[targetEvent].Add(callback);
         }
         
-        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
+        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<Window> callback)
         {
             if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
                 return;
@@ -126,17 +125,16 @@ namespace BrunoMikoski.UIManager
             return false;
         }
 
-        private void DispatchWindowEvent(WindowEvent targetEvent, WindowID windowID)
+        private void DispatchWindowEvent(WindowEvent targetEvent, Window window)
         {
-            if (windowToEventToCallbackList.ContainsKey(windowID))
+            if (windowToEventToCallbackList.ContainsKey(window.WindowID))
             {
-                if (windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
+                if (windowToEventToCallbackList[window.WindowID].ContainsKey(targetEvent))
                 {
-                    for (int i = 0; i < windowToEventToCallbackList[windowID][targetEvent].Count; i++)
+                    for (int i = 0; i < windowToEventToCallbackList[window.WindowID][targetEvent].Count; i++)
                     {
-                        windowToEventToCallbackList[windowID][targetEvent][i].Invoke();
+                        windowToEventToCallbackList[window.WindowID][targetEvent][i].Invoke();
                     }
-
                 }
             }
 
@@ -144,7 +142,7 @@ namespace BrunoMikoski.UIManager
             {
                 for (int i = 0; i < windowEventToAnyWindowCallbackList[targetEvent].Count; i++)
                 {
-                    windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(windowID);
+                    windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(window);
                 }
             }
         }

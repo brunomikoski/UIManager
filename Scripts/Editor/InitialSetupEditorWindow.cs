@@ -47,22 +47,39 @@ namespace BrunoMikoski.UIManager
 
         private void PerformInitialSetup()
         {
-            WindowIDs windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(ScriptableObjectFolder, true,
-                "WindowIDs");
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> windowIDs))
+            {
+                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(ScriptableObjectFolder, true,
+                    "WindowIDs");
+            }
+
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> layerIDs))
+            {
+                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(ScriptableObjectFolder, true,
+                    "LayerIDs");
+            }
             
-            LayerIDs layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(ScriptableObjectFolder, true,
-                "LayerIDs");
-            layerIDs.AddNew("Main");
-            layerIDs.AddNew("Popup");
-            layerIDs.AddNew("Overlay");
-            
-            GroupIDs groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(ScriptableObjectFolder, true,
-                "GroupIDs");
-            groupIDs.AddNew("Main");
-            
-            Transitions transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
-                "Transitions");
-            transitions.AddNew(typeof(ReverseTransition), "ReverseTransition");
+
+            layerIDs.GetOrAddNew("Main");
+            layerIDs.GetOrAddNew("Popup");
+            layerIDs.GetOrAddNew("Overlay");
+
+
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> groupIDs))
+            {
+                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(ScriptableObjectFolder, true,
+                    "GroupIDs");
+            }
+            groupIDs.GetOrAddNew("Main");
+
+
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(
+                out ScriptableObjectCollection<TransitionBase> transitions))
+            {
+                transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
+                    "Transitions");
+            }
+            transitions.GetOrAddNew(typeof(ReverseTransition), "ReverseInTransition");
             
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(windowIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(layerIDs, true);
@@ -88,11 +105,42 @@ namespace BrunoMikoski.UIManager
             
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+            Close();
         }
 
         private bool AreSettingsValid()
         {
             return ScriptableObjectFolder != null;
+        }
+
+        public static bool NeedSetup()
+        {
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> _))
+            {
+                Debug.Log("Need Window Setup");
+                return true;
+            }
+
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> _))
+            {
+                Debug.Log("Need Layer Setup");
+                return true;
+            }
+
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> _))
+            {
+                Debug.Log("Need Group Setup");
+                return true;
+            }
+
+            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<TransitionBase> _))
+            {
+                Debug.Log("Need Transitions Setup");
+
+                return true;
+            }
+            
+            return false;
         }
     }
 }

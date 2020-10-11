@@ -15,7 +15,7 @@ namespace BrunoMikoski.UIManager
         [MenuItem("Tools/UI Manager/Initial Setup", true)]
         public static bool InitialSetup_Validator()
         {
-            return !CollectionsRegistry.Instance.TryGetCollectionForType<WindowID>(out _);
+            return !InitialSetupEditorWindow.NeedSetup();
         }
     }
  

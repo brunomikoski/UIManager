@@ -18,21 +18,17 @@ namespace BrunoMikoski.UIManager
                 Callback = callback;
             }
         }
-        public enum WindowEvent
-        {
-            OnOpen,
-            OnClose,
-            OnLostFocus,
-            OnGainFocus
-        }
-        
-        
+
+
+        private Dictionary<WindowEvent, List<Action<WindowID>>> windowEventToAnyWindowCallbackList = new Dictionary<WindowEvent,List<Action<WindowID>>>();
         private Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>>();
         private List<TransitionEventData> transationEvents = new List<TransitionEventData>();
 
+        
+        
         public void SubscribeToTransitionEvent(WindowID fromWindowID, WindowID toWindowID, Action callback)
         {
-            if (IsSubscribedAlready(fromWindowID, toWindowID, callback, out _))
+            if (TryGetTransitionEventData(fromWindowID, toWindowID, callback, out _))
                 return;
             
             transationEvents.Add(new TransitionEventData(fromWindowID, toWindowID, callback));
@@ -40,12 +36,34 @@ namespace BrunoMikoski.UIManager
         
         public void UnsubscribeToTransitionEvent(WindowID fromWindowID, WindowID toWindowID, Action callback)
         {
-            if (!IsSubscribedAlready(fromWindowID, toWindowID, callback, out TransitionEventData result))
+            if (!TryGetTransitionEventData(fromWindowID, toWindowID, callback, out TransitionEventData result))
                 return;
 
             transationEvents.Remove(result);
         }
+        
+        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
+        {
+            if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
+                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<WindowID>>());
 
+            if (windowEventToAnyWindowCallbackList[targetEvent].Contains(callback))
+                return;
+
+            windowEventToAnyWindowCallbackList[targetEvent].Add(callback);
+        }
+        
+        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
+        {
+            if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
+                return;
+
+            if (!windowEventToAnyWindowCallbackList[targetEvent].Contains(callback))
+                return;
+
+            windowEventToAnyWindowCallbackList[targetEvent].Remove(callback);
+        }
+        
         public void UnsubscribeToWindowEvent(WindowEvent targetEvent, WindowID windowID, Action callback)
         {
             if (!windowToEventToCallbackList.ContainsKey(windowID))
@@ -57,6 +75,7 @@ namespace BrunoMikoski.UIManager
             windowToEventToCallbackList[windowID][targetEvent].Remove(callback);
         }
 
+        
         public void SubscribeToWindowEvent(WindowEvent targetEvent, WindowID windowID, Action callback)
         {
             if (!windowToEventToCallbackList.ContainsKey(windowID))
@@ -89,8 +108,7 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-
-        private bool IsSubscribedAlready(WindowID fromWindowID, WindowID toWindowID, Action callback, out TransitionEventData result)
+        private bool TryGetTransitionEventData(WindowID fromWindowID, WindowID toWindowID, Action callback, out TransitionEventData result)
         {
             for (int i = 0; i < transationEvents.Count; i++)
             {
@@ -110,17 +128,34 @@ namespace BrunoMikoski.UIManager
 
         private void DispatchWindowEvent(WindowEvent targetEvent, WindowID windowID)
         {
-            if (!windowToEventToCallbackList.ContainsKey(windowID))
-                return;
-
-            if (!windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
-                return;
-
-            for (int i = 0; i < windowToEventToCallbackList[windowID][targetEvent].Count; i++)
+            if (windowToEventToCallbackList.ContainsKey(windowID))
             {
-                windowToEventToCallbackList[windowID][targetEvent][i].Invoke();
+                if (windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
+                {
+                    for (int i = 0; i < windowToEventToCallbackList[windowID][targetEvent].Count; i++)
+                    {
+                        windowToEventToCallbackList[windowID][targetEvent][i].Invoke();
+                    }
+
+                }
+            }
+
+            if (windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
+            {
+                for (int i = 0; i < windowEventToAnyWindowCallbackList[targetEvent].Count; i++)
+                {
+                    windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(windowID);
+                }
             }
         }
 
+    }
+
+    public enum WindowEvent
+    {
+        OnOpen,
+        OnClose,
+        OnLostFocus,
+        OnGainFocus
     }
 }

@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
@@ -8,6 +10,9 @@ namespace BrunoMikoski.UIManager
     {
         [SerializeField]
         private bool cacheInterfacesInstance = true;
+
+        [SerializeField] 
+        private bool disableInteractionWhileTransitioning = true;
         
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
@@ -31,6 +36,18 @@ namespace BrunoMikoski.UIManager
             }
         }
 
+        
+        private GraphicRaycaster cachedGraphicRaycaster;
+        public GraphicRaycaster GraphicRaycaster
+        {
+            get
+            {
+                if (cachedGraphicRaycaster == null)
+                    cachedGraphicRaycaster = this.GetOrAddComponent<GraphicRaycaster>();
+                return cachedGraphicRaycaster;
+            }
+        }
+
         private WindowsManager windowsManager;
         public WindowsManager WindowsManager => windowsManager;
 
@@ -39,6 +56,9 @@ namespace BrunoMikoski.UIManager
 
         private bool isOpen;
         public bool IsOpen => isOpen;
+
+        private Coroutine closeRoutine;
+        private Coroutine openRoutine;
 
 
         public void Initialize(WindowsManager windowsManager, WindowID windowID)
@@ -50,20 +70,30 @@ namespace BrunoMikoski.UIManager
 
         private IEnumerator OpenEnumerator()
         {
+            if (disableInteractionWhileTransitioning)
+                GraphicRaycaster.enabled = false;
+
             DispatchOnBeforeWindowOpen();
             gameObject.SetActive(true);
 
             yield return ExecuteTransitionEnumerator(TransitionType.TransitionIn);
             DispatchOnAfterWindowOpen();
+
+            GraphicRaycaster.enabled = true;
         }
        
         private IEnumerator CloseEnumerator()
         {
+            if (disableInteractionWhileTransitioning)
+                GraphicRaycaster.enabled = false;
+            
             DispatchOnBeforeWindowClose();
 
             yield return ExecuteTransitionEnumerator(TransitionType.TransitionOut);
             gameObject.SetActive(false);
             DispatchOnAfterWindowClose();
+            
+            GraphicRaycaster.enabled = true;
         }
         
         private IEnumerator ExecuteTransitionEnumerator(TransitionType transitionType)
@@ -81,17 +111,21 @@ namespace BrunoMikoski.UIManager
             if (!isOpen)
                 return;
             
+            StopTransitionCoroutines();
+            
             isOpen = false;
-            windowsManager.StartCoroutine(CloseEnumerator());
+            closeRoutine = windowsManager.StartCoroutine(CloseEnumerator());
         }
 
         public void Open()
         {
             if (isOpen)
                 return;
+
+            StopTransitionCoroutines();
             
             isOpen = true;
-            windowsManager.StartCoroutine(OpenEnumerator());
+            openRoutine = windowsManager.StartCoroutine(OpenEnumerator());
         }
 
         public virtual void OnGainFocus()
@@ -102,6 +136,23 @@ namespace BrunoMikoski.UIManager
         public void OnLostFocus()
         {
             DispatchOnLostFocus();
+        }
+
+        private void OnDestroy()
+        {
+            StopTransitionCoroutines();
+        }
+
+        private void StopTransitionCoroutines()
+        {
+            if (closeRoutine != null)
+                StopCoroutine(closeRoutine);
+
+            if (openRoutine != null)
+                StopCoroutine(openRoutine);
+            
+            closeRoutine = null;
+            openRoutine = null;
         }
     }
 }

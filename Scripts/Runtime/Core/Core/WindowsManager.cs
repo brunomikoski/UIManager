@@ -89,15 +89,12 @@ namespace BrunoMikoski.UIManager
         private List<Window> GetAllOpenWindows()
         {
             List<Window> resultOpenWindows = new List<Window>();
-            if (CollectionsRegistry.Instance.TryGetCollection(out LayerIDs layerIDs))
+            for (int i = LayerIDs.Values.Count - 1; i >= 0; i--)
             {
-                for (int i = layerIDs.Count - 1; i >= 0; i--)
-                {
-                    if (!TryGetOpenWindowsOfLayer(layerIDs[i], out List<Window> openWindows)) 
-                        continue;
+                if (!TryGetOpenWindowsOfLayer(LayerIDs.Values[i], out List<Window> openWindows)) 
+                    continue;
                     
-                    resultOpenWindows.AddRange(openWindows);
-                }
+                resultOpenWindows.AddRange(openWindows);
             }
 
             return resultOpenWindows;
@@ -121,6 +118,9 @@ namespace BrunoMikoski.UIManager
             CloseLast();
             
             WindowID last = history.Last();
+            if (IsWindowOpen(last))
+                return;
+            
             history.RemoveAt(history.Count - 1);
             Open(last);
         }
@@ -145,21 +145,18 @@ namespace BrunoMikoski.UIManager
 
         private void UpdateFocusedWindow()
         {
-            if(CollectionsRegistry.Instance.TryGetCollection(out LayerIDs layerIDs))
+            for (int i = LayerIDs.Values.Count - 1; i >= 0; i--)
             {
-                for (int i = layerIDs.Count - 1; i >= 0; i--)
+                LayerID layerID = LayerIDs.Values[i];
+                if (TryGetOpenWindowsOfLayer(layerID, out List<Window> openWindows))
                 {
-                    LayerID layerID = layerIDs[i];
-                    if (TryGetOpenWindowsOfLayer(layerID, out List<Window> openWindows))
-                    {
-                        openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
-                            .CompareTo(windowB.RectTransform.GetSiblingIndex()));
+                    openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
+                        .CompareTo(windowB.RectTransform.GetSiblingIndex()));
 
-                        for (int j = openWindows.Count - 1; j >= 0; j--)
-                        {
-                            SetFocusedWindow(openWindows[j]);
-                            return;
-                        }
+                    for (int j = openWindows.Count - 1; j >= 0; j--)
+                    {
+                        SetFocusedWindow(openWindows[j]);
+                        return;
                     }
                 }
             }

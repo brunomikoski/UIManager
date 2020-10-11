@@ -221,23 +221,17 @@ namespace BrunoMikoski.UIManager
 
         private void InitializeLayers()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollection(out LayerIDs layers)) 
-                return;
-            
-            for (int i = 0; i < layers.Count; i++)
+            for (int i = 0; i < LayerIDs.Values.Count; i++)
             {
-                CreateLayer(layers[i]);
+                CreateLayer(LayerIDs.Values[i]);
             }
         }
         
         private void InitializeGroups()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollection(out WindowIDs windows))
-                return;
-
-            for (int i = 0; i < windows.Count; i++)
+            for (int i = 0; i < WindowIDs.Values.Count; i++)
             {
-                WindowID windowID = windows[i];
+                WindowID windowID = WindowIDs.Values[i];
 
                 if (windowID.GroupID == null) 
                     continue;
@@ -256,12 +250,9 @@ namespace BrunoMikoski.UIManager
         
         private void InitializeWindows()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollection(out WindowIDs windows))
-                return;
-
-            for (int i = 0; i < windows.Count; i++)
+            for (int i = 0; i < WindowIDs.Values.Count; i++)
             {
-                InitializeWindow(windows[i]);
+                InitializeWindow(WindowIDs.Values[i]);
             }
         }
 

@@ -11,13 +11,14 @@
 
 ## Features
  - Automatically Instantiation and manage of windows based on Layers
- - Built on [ScriptableObject Collection](https://github.com/badawe/ScriptableObjectCollection/), so you have quick access by code/inspector of your Windows and features.
+ - Built on [ScriptableObject Collection](https://github.com/brunomikoski/ScriptableObjectCollection/), so you have quick access by code/inspector of your Windows and features.
  - Transitions support, you can quickly define a series of transition per window, and quickly create and reuse new ones.
  - Quickly access window events
  - Fully events system for interacting with window.
  - Full Window Interfaces for quickly develop windows components.
  - 2 Layers Behaviours, `Exclusive`: will close the current open window before opening a new one, `Additive`: will open the new window on top
  - Groups Support, setup your windows based on groups (Gameplay / Meta / Shop) and quickly load / unload specific groups to free memory  
+ - Script Based, not messying around trying to see where a window reference is.
 
 ## How to use?
  - UI Manager needs 4 different Scriptable Object Collections to work WindowIDs, LayerIDs, GroupIDs and Transitions, you should be able to create it by the `Tools / UI Manager / Initial Setup`
@@ -31,12 +32,14 @@
 - How do I access the Windows Manager?
     - The windows manager its a pure solution for working with UI, so I doesn't come with a Singleton/Service Locator/DI System, feel free to use whatever your project needs.
     - After the initial setup is done, you can use the static generated file generated out of `WindowIDs` to interact with windows, ex.: `AllWindows.MainMenu.Open();`     
-- How can I access the vents?
+- How can I access the events?
     - You can subscribe to any window event by: `windowManager.SubscribeToWindowEvent(WindowEvent targetEvent, WindowID windowID, Action callback)` and `windowManager.SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<Window> callback)
     - Available Window Events: `OnWillOpen, OnOpened, OnWillClose, OnClosed, OnLostFocus, OnGainFocus`
     - You can also subscribe to specific transitions `windowsManager.SubscribeToTransitionEvent(AllWindows.MainMenu, AllWindows.Shopping, OnEnterShopFromMainMenu);` 
-
-
+- I want some component of a Window to do something when the window is open
+    - You just need your child component of the window to implement one of the WindowInterfaces: `IOnAfterWindowOpen` 
+- I want to create a new transition
+    - Just select the Transitions Collection and create a new type by using the Add Menu, you can do the transition that you want. 
      
 ## System Requirements
 Unity 2018.4.0 or later versions

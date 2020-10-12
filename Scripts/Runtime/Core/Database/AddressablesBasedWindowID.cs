@@ -8,5 +8,10 @@ namespace BrunoMikoski.UIManager
         {
             yield break;
         }
+
+        public override IEnumerator DestroyEnumerator()
+        {
+            yield break;
+        }
     }
 }

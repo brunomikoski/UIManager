@@ -19,7 +19,9 @@ namespace BrunoMikoski.UIManager
                 return cachedParentWindow;
             }
         }
-        
+
+        protected WindowsManager WindowsManager => ParentWindow.WindowsManager;
+
         private void Reset()
         {
             button = GetComponent<Button>();

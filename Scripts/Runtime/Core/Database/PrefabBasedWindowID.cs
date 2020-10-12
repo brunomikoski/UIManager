@@ -11,7 +11,15 @@ namespace BrunoMikoski.UIManager
 
         public override IEnumerator InstantiateEnumerator(WindowsManager windowsManager)
         {
+            windowPrefab.gameObject.SetActive(false);
             windowInstance = Instantiate(windowPrefab);
+            yield break;
+        }
+
+        public override IEnumerator DestroyEnumerator()
+        {
+            Destroy(windowInstance.gameObject);
+            windowInstance = null;
             yield break;
         }
     }

@@ -28,8 +28,10 @@ namespace BrunoMikoski.UIManager
 
         [NonSerialized]
         protected Window windowInstance;
-        public Window WindowInstance => windowInstance;
+       public Window WindowInstance => windowInstance;
 
+       private WindowsManager windowsManager;
+       
         public bool HasWindowInstance
         {
             get
@@ -42,7 +44,7 @@ namespace BrunoMikoski.UIManager
 
         public void Open()
         {
-            this.windowInstance.WindowsManager.Open(this);
+            this.windowsManager.Open(this);
         }
 
         public bool TryGetTransition(TransitionType transitionType, out AnimatedTransition resultAnimatedTransition, out bool playBackwards)
@@ -89,7 +91,15 @@ namespace BrunoMikoski.UIManager
             resultTransition = null;
             return false;
         }
+        
+        public void SetWindowsManager(WindowsManager targetWindowsManager)
+        {
+            this.windowsManager = targetWindowsManager;
+        }
 
         public abstract IEnumerator InstantiateEnumerator(WindowsManager windowsManager);
+        public abstract IEnumerator DestroyEnumerator();
+
+       
     }
 }

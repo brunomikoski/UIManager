@@ -156,6 +156,7 @@ namespace BrunoMikoski.UIManager
         OnWillClose,
         OnClosed,
         OnLostFocus,
-        OnGainFocus
+        OnGainFocus,
+        OnWindowWillBeDestroyed
     }
 }

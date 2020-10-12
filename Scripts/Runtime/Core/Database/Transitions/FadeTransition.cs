@@ -39,5 +39,17 @@ namespace BrunoMikoski.UIManager
                 tween.Kill();
             }
         }
+
+        public void SetAnimationValues(float from, float to, float duration, Ease ease)
+        {
+            fromValue = from;
+            toValue = to;
+            this.duration = duration;
+            this.ease = ease;
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+                UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        }
     }
 }

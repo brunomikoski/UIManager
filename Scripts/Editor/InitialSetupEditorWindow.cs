@@ -1,4 +1,5 @@
 using BrunoMikoski.ScriptableObjectCollections;
+using DG.Tweening;
 using UnityEditor;
 using UnityEngine;
 
@@ -80,16 +81,22 @@ namespace BrunoMikoski.UIManager
                     "Transitions");
             }
             transitions.GetOrAddNew(typeof(ReverseTransition), "ReverseInTransition");
+            transitions.GetOrAddNew<FadeTransition>("FadeInTransition")
+                .SetAnimationValues(0, 1, 0.3f, Ease.Linear);
+            
+            transitions.GetOrAddNew<ScaleTransition>("ScaleInTransition")
+                .SetAnimationValues(Vector3.zero, Vector3.one, 0.6f, Ease.OutBack);
+            
             
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(windowIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(layerIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(groupIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(transitions, true);
 
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(windowIDs, "WindowIDStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(layerIDs, "LayerIDStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(groupIDs, "GroupIDStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(transitions, "TransitionStatic");
+            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(windowIDs, "WindowIDsStatic");
+            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(layerIDs, "LayerIDsStatic");
+            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(groupIDs, "GroupIDsStatic");
+            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(transitions, "TransitionsStatic");
             
             string generatedCodeFolderPath = AssetDatabase.GetAssetPath(GeneratedCodeFolder);
             
@@ -116,29 +123,16 @@ namespace BrunoMikoski.UIManager
         public static bool NeedSetup()
         {
             if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> _))
-            {
-                Debug.Log("Need Window Setup");
                 return true;
-            }
 
             if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> _))
-            {
-                Debug.Log("Need Layer Setup");
                 return true;
-            }
 
             if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> _))
-            {
-                Debug.Log("Need Group Setup");
                 return true;
-            }
 
             if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<TransitionBase> _))
-            {
-                Debug.Log("Need Transitions Setup");
-
                 return true;
-            }
             
             return false;
         }

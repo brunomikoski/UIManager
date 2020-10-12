@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
 
@@ -25,16 +26,23 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private TransitionData[] transitions;
 
-        private WindowsManager windowsManager;
-        
-        public void SetWindowsManager(WindowsManager windowsManager)
+        [NonSerialized]
+        protected Window windowInstance;
+        public Window WindowInstance => windowInstance;
+
+        public bool HasWindowInstance
         {
-            this.windowsManager = windowsManager;
+            get
+            {
+                if (windowInstance == null)
+                    return false;
+                return windowInstance.Initialized;
+            }
         }
 
         public void Open()
         {
-            this.windowsManager.Open(this);
+            this.windowInstance.WindowsManager.Open(this);
         }
 
         public bool TryGetTransition(TransitionType transitionType, out AnimatedTransition resultAnimatedTransition, out bool playBackwards)
@@ -81,5 +89,7 @@ namespace BrunoMikoski.UIManager
             resultTransition = null;
             return false;
         }
+
+        public abstract IEnumerator InstantiateEnumerator(WindowsManager windowsManager);
     }
 }

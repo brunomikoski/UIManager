@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,20 +56,23 @@ namespace BrunoMikoski.UIManager
 
         private bool isOpen;
         public bool IsOpen => isOpen;
+        
+        private bool initialized;
+        public bool Initialized => initialized;
 
         private Coroutine closeRoutine;
         private Coroutine openRoutine;
+        
 
-
-        public void Initialize(WindowsManager windowsManager, WindowID windowID)
+        public void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
         {
-            this.windowsManager = windowsManager;
-            this.windowID = windowID;
-            this.windowID.SetWindowsManager(windowsManager);
+            windowsManager = targetWindowsManager;
+            windowID = targetWindowID;
             DispatchWindowInitialized();
+            initialized = true;
         }
 
-        private IEnumerator OpenEnumerator()
+        private IEnumerator OpenEnumerator(Action<Window> callback)
         {
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
@@ -80,9 +84,10 @@ namespace BrunoMikoski.UIManager
             DispatchOnAfterWindowOpen();
 
             GraphicRaycaster.enabled = true;
+            callback?.Invoke(this);
         }
        
-        private IEnumerator CloseEnumerator()
+        private IEnumerator CloseEnumerator(Action<Window> callback)
         {
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
@@ -94,6 +99,7 @@ namespace BrunoMikoski.UIManager
             DispatchOnAfterWindowClose();
             
             GraphicRaycaster.enabled = true;
+            callback?.Invoke(this);
         }
         
         private IEnumerator ExecuteTransitionEnumerator(TransitionType transitionType)
@@ -106,7 +112,7 @@ namespace BrunoMikoski.UIManager
         }
 
 
-        public void Close()
+        public void Close(Action<Window> callback = null)
         {
             if (!isOpen)
                 return;
@@ -114,10 +120,10 @@ namespace BrunoMikoski.UIManager
             StopTransitionCoroutines();
             
             isOpen = false;
-            closeRoutine = windowsManager.StartCoroutine(CloseEnumerator());
+            closeRoutine = windowsManager.StartCoroutine(CloseEnumerator(callback));
         }
 
-        public void Open()
+        public void Open(Action<Window> callback = null)
         {
             if (isOpen)
                 return;
@@ -125,7 +131,7 @@ namespace BrunoMikoski.UIManager
             StopTransitionCoroutines();
             
             isOpen = true;
-            openRoutine = windowsManager.StartCoroutine(OpenEnumerator());
+            openRoutine = windowsManager.StartCoroutine(OpenEnumerator(callback));
         }
 
         public virtual void OnGainFocus()

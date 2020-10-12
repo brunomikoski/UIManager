@@ -1,16 +1,18 @@
+using System.Collections;
 using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
     public sealed class PrefabBasedWindowID : WindowID
     {
+        [Header("References")]
         [SerializeField]
         private Window windowPrefab;
-        public Window WindowPrefab => windowPrefab;
 
-        [SerializeField]
-        private bool instantiateOnInitialization = true;
-        public bool InstantiateOnInitialization => instantiateOnInitialization;
-
+        public override IEnumerator InstantiateEnumerator(WindowsManager windowsManager)
+        {
+            windowInstance = Instantiate(windowPrefab);
+            yield break;
+        }
     }
 }

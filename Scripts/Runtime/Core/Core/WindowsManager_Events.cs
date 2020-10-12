@@ -73,7 +73,6 @@ namespace BrunoMikoski.UIManager
 
             windowToEventToCallbackList[windowID][targetEvent].Remove(callback);
         }
-
         
         public void SubscribeToWindowEvent(WindowEvent targetEvent, WindowID windowID, Action callback)
         {
@@ -151,8 +150,11 @@ namespace BrunoMikoski.UIManager
 
     public enum WindowEvent
     {
-        OnOpen,
-        OnClose,
+        OnWindowInitialized,
+        OnWillOpen,
+        OnOpened,
+        OnWillClose,
+        OnClosed,
         OnLostFocus,
         OnGainFocus
     }

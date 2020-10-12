@@ -349,6 +349,7 @@ namespace BrunoMikoski.UIManager
                         .CompareTo(windowB.RectTransform.GetSiblingIndex()));
 
                     SetFocusedWindow(openWindows.Last());
+                    return;
                 }
             }
         }

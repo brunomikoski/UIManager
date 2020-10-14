@@ -465,8 +465,6 @@ namespace BrunoMikoski.UIManager
 
             DispatchWindowEvent(WindowEvent.OnWindowWillBeDestroyed, windowID.WindowInstance);
             yield return windowID.DestroyEnumerator();
-            
-
         }
 
         private RectTransform GetParentForLayer(LayerID layerID)

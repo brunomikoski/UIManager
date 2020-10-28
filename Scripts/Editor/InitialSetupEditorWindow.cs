@@ -48,13 +48,13 @@ namespace BrunoMikoski.UIManager
 
         private void PerformInitialSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> windowIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<WindowID> windowIDs))
             {
                 windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(ScriptableObjectFolder, true,
                     "WindowIDs");
             }
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> layerIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<LayerID> layerIDs))
             {
                 layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(ScriptableObjectFolder, true,
                     "LayerIDs");
@@ -66,7 +66,7 @@ namespace BrunoMikoski.UIManager
             layerIDs.GetOrAddNew("Overlay");
 
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> groupIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<GroupID> groupIDs))
             {
                 groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(ScriptableObjectFolder, true,
                     "GroupIDs");
@@ -74,7 +74,7 @@ namespace BrunoMikoski.UIManager
             groupIDs.GetOrAddNew("Main");
 
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(
                 out ScriptableObjectCollection<TransitionBase> transitions))
             {
                 transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
@@ -122,16 +122,16 @@ namespace BrunoMikoski.UIManager
 
         public static bool NeedSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<WindowID> _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<LayerID> _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<GroupID> _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<TransitionBase> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(out ScriptableObjectCollection<TransitionBase> _))
                 return true;
             
             return false;

@@ -45,19 +45,19 @@ namespace BrunoMikoski.UIManager
 
         private void InitializeCollections()
         {
-            if (CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(
+            if (CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(
                 out ScriptableObjectCollection<WindowID> windows))
             {
                 windowIDs = windows as WindowIDs;
             }
             
-            if (CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(
+            if (CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(
                 out ScriptableObjectCollection<GroupID> groups))
             {
                 groupIDs = groups as GroupIDs;
             }
             
-            if (CollectionsRegistry.Instance.TryGetCollectionFromCollectableType(
+            if (CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(
                 out ScriptableObjectCollection<LayerID> layers))
             {
                 layerIDs = layers as LayerIDs;

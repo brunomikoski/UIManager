@@ -5,11 +5,11 @@ namespace BrunoMikoski.UIManager
     public class OpenWindowOnClick : WindowButtonBase
     {
         [SerializeField] 
-        private WindowID targetWindow;
+        private WindowIDIndirectReference targetWindow;
 
         protected override void OnClick()
         {
-            targetWindow.Open();
+            targetWindow.Ref.Open();
         }
     }
 }

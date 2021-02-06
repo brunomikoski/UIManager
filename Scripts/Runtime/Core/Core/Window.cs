@@ -165,10 +165,7 @@ namespace BrunoMikoski.UIManager
                 animatedTransition.BeforeTransition(this);
                 yield return animatedTransition.ExecuteEnumerator(this, playBackwards);
             }
-            else
-            {
-                gameObject.SetActive(false);
-            }
+            gameObject.SetActive(false);
         }
 
         public virtual void OnGainFocus()

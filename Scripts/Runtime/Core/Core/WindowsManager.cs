@@ -52,14 +52,10 @@ namespace BrunoMikoski.UIManager
             for (int i = 0; i < WindowIDs.Values.Count; i++)
             {
                 WindowID windowID = WindowIDs.Values[i];
-                if (windowID.GroupID == null)
-                    continue;
-                
-                if (!windowID.GroupID.AutoLoaded)
+                if (windowID.GroupID != null && !windowID.GroupID.AutoLoaded)
                     continue;
                 
                 initialWindowIDs.Add(windowID);
-                
             }
 
             LoadWindows(OnInitialWindowsLoaded, initialWindowIDs.ToArray());
@@ -116,6 +112,7 @@ namespace BrunoMikoski.UIManager
 
         private IEnumerator LoadWindowsEnumerator(Action<WindowID[]> onWindowsLoaded, params WindowID[] targetWindows)
         {
+            OnBeforeStartLoadingWindows(targetWindows);
             List<WindowID> loadingWindows = new List<WindowID>();
             for (int i = 0; i < targetWindows.Length; i++)
             {
@@ -144,7 +141,18 @@ namespace BrunoMikoski.UIManager
                     yield return null;
             }
 
+            OnFinishLoadingWindows();
             onWindowsLoaded?.Invoke(targetWindows);
+        }
+
+        protected virtual void OnFinishLoadingWindows()
+        {
+            
+        }
+
+        protected virtual void OnBeforeStartLoadingWindows(WindowID[] targetWindows)
+        {
+            
         }
 
         private void CleanupHierarchy()

@@ -20,7 +20,7 @@ namespace BrunoMikoski.UIManager
             targetWindow.CanvasGroup.alpha = fromValue;
         }
 
-        public override IEnumerator ExecuteEnumerator(Window targetWindow, TransitionType transitionType,
+        public override IEnumerator ExecuteEnumerator(Window targetWindow,
             bool isBackwards)
         {
             if (!isBackwards)

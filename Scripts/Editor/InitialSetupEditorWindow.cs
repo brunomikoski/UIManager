@@ -62,7 +62,8 @@ namespace BrunoMikoski.UIManager
             
 
             layerIDs.GetOrAddNew("Main");
-            layerIDs.GetOrAddNew("Popup");
+            LayerID popup = layerIDs.GetOrAddNew("Popup");
+            popup.SetIncludedInHistory(false);
             layerIDs.GetOrAddNew("Overlay");
 
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))

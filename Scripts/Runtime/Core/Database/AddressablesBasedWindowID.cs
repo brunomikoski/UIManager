@@ -8,7 +8,6 @@ namespace BrunoMikoski.UIManager
 {
     public sealed class AddressablesBasedWindowID : WindowID
     {
-
         [SerializeField] 
         private AssetReferenceGameObject windowPrefab;
         

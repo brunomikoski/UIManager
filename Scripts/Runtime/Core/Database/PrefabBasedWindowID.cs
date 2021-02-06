@@ -13,6 +13,7 @@ namespace BrunoMikoski.UIManager
         {
             windowPrefab.gameObject.SetActive(false);
             windowInstance = Instantiate(windowPrefab);
+            windowInstance.name = $"{windowPrefab.name} [{this.name}]";
             yield break;
         }
 

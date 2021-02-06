@@ -68,51 +68,46 @@ namespace BrunoMikoski.UIManager
         {
             windowsManager = targetWindowsManager;
             windowID = targetWindowID;
-            DispatchWindowInitialized();
             initialized = true;
+            DispatchWindowInitialized();
         }
 
+        internal void Open(Action<Window> callback = null)
+        {
+            if (isOpen)
+                return;
+
+            StopTransitionCoroutines();
+            
+            isOpen = true;
+            openRoutine = windowsManager.StartCoroutine(OpenEnumerator(callback));
+        }
+        
         private IEnumerator OpenEnumerator(Action<Window> callback)
         {
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
 
-            DispatchOnBeforeWindowOpen();
-            gameObject.SetActive(true);
+            OnBeforeOpen();
 
-            yield return ExecuteTransitionEnumerator(TransitionType.TransitionIn);
-            DispatchOnAfterWindowOpen();
-
+            yield return TransiteInEnumerator();
+            
             GraphicRaycaster.enabled = true;
             callback?.Invoke(this);
+            OnAfterOpen();
         }
-       
-        private IEnumerator CloseEnumerator(Action<Window> callback)
-        {
-            if (disableInteractionWhileTransitioning)
-                GraphicRaycaster.enabled = false;
-            
-            DispatchOnBeforeWindowClose();
 
-            yield return ExecuteTransitionEnumerator(TransitionType.TransitionOut);
-            gameObject.SetActive(false);
-            DispatchOnAfterWindowClose();
-            
-            GraphicRaycaster.enabled = true;
-            callback?.Invoke(this);
+        protected virtual void OnBeforeOpen()
+        {
+            DispatchOnBeforeWindowOpen();
         }
         
-        private IEnumerator ExecuteTransitionEnumerator(TransitionType transitionType)
+        private void OnAfterOpen()
         {
-            if(!windowID.TryGetTransition(transitionType, out AnimatedTransition animatedTransition, out bool playBackwards))
-                yield break;
-
-            animatedTransition.BeforeTransition(this);
-            yield return animatedTransition.ExecuteEnumerator(this, transitionType, playBackwards);
+            DispatchOnAfterWindowOpen();
         }
-
-
-        public void Close(Action<Window> callback = null)
+        
+        internal void Close(Action<Window> callback = null)
         {
             if (!isOpen)
                 return;
@@ -123,15 +118,57 @@ namespace BrunoMikoski.UIManager
             closeRoutine = windowsManager.StartCoroutine(CloseEnumerator(callback));
         }
 
-        public void Open(Action<Window> callback = null)
+        private IEnumerator CloseEnumerator(Action<Window> callback)
         {
-            if (isOpen)
-                return;
-
-            StopTransitionCoroutines();
+            if (disableInteractionWhileTransitioning)
+                GraphicRaycaster.enabled = false;
             
-            isOpen = true;
-            openRoutine = windowsManager.StartCoroutine(OpenEnumerator(callback));
+            OnBeforeClose();
+
+            yield return TransiteOutEnumerator();
+
+            GraphicRaycaster.enabled = true;
+            callback?.Invoke(this);
+            OnAfterClose();
+        }
+
+        protected virtual void OnBeforeClose()
+        {
+            DispatchOnBeforeWindowClose();
+        }
+        
+        protected virtual void OnAfterClose()
+        {
+            DispatchOnAfterWindowClose();
+        }
+        
+        protected virtual IEnumerator TransiteInEnumerator()
+        {
+            if (windowID.TryGetTransition(TransitionType.TransitionIn, out AnimatedTransition animatedTransition,
+                out bool playBackwards))
+            {
+                animatedTransition.BeforeTransition(this);
+                gameObject.SetActive(true);
+                yield return animatedTransition.ExecuteEnumerator(this, playBackwards);
+            }
+            else
+            {
+                gameObject.SetActive(true);
+            }
+        }
+        
+        protected virtual IEnumerator TransiteOutEnumerator()
+        {
+            if (windowID.TryGetTransition(TransitionType.TransitionOut, out AnimatedTransition animatedTransition,
+                out bool playBackwards))
+            {
+                animatedTransition.BeforeTransition(this);
+                yield return animatedTransition.ExecuteEnumerator(this, playBackwards);
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         public virtual void OnGainFocus()
@@ -144,11 +181,6 @@ namespace BrunoMikoski.UIManager
             DispatchOnLostFocus();
         }
 
-        private void OnDestroy()
-        {
-            StopTransitionCoroutines();
-        }
-
         private void StopTransitionCoroutines()
         {
             if (closeRoutine != null)
@@ -159,6 +191,11 @@ namespace BrunoMikoski.UIManager
             
             closeRoutine = null;
             openRoutine = null;
+        }
+        
+        private void OnDestroy()
+        {
+            StopTransitionCoroutines();
         }
     }
 }

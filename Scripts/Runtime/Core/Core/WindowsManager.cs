@@ -233,8 +233,10 @@ namespace BrunoMikoski.UIManager
             UpdateFocusedWindow();
 
             windowID.WindowInstance.Open(OnWindowInstanceOpened);
+
+            if (windowID.LayerID.IncludedOnHistory)
+                history.Add(windowID);
             
-            history.Add(windowID);
             DispatchTransition(previouslyOpenWindow, windowID.WindowInstance);
         }
 

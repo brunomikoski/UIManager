@@ -120,7 +120,7 @@ namespace BrunoMikoski.UIManager
                 if (windowID.HasWindowInstance)
                     continue;
                 
-                StartCoroutine(InitializeWindowEnumerator(windowID));
+                StartCoroutine(InstantiateWindowEnumerator(windowID));
                 loadingWindows.Add(windowID);
             }
             bool allLoaded = false;
@@ -145,12 +145,12 @@ namespace BrunoMikoski.UIManager
             onWindowsLoaded?.Invoke(targetWindows);
         }
 
-        protected virtual void OnFinishLoadingWindows()
+        protected virtual void OnBeforeStartLoadingWindows(WindowID[] targetWindows)
         {
             
         }
-
-        protected virtual void OnBeforeStartLoadingWindows(WindowID[] targetWindows)
+        
+        protected virtual void OnFinishLoadingWindows()
         {
             
         }
@@ -384,7 +384,7 @@ namespace BrunoMikoski.UIManager
 
         }
         
-        private IEnumerator InitializeWindowEnumerator(WindowID windowID)
+        private IEnumerator InstantiateWindowEnumerator(WindowID windowID)
         {
             if (windowID.HasWindowInstance)
                 yield break;

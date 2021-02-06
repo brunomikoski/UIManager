@@ -36,7 +36,7 @@ namespace BrunoMikoski.UIManager.CustomEditors
         private void InstantiateAllWindows()
         {
             WindowsManager windowsManager = target as WindowsManager;
-            windowsManager.InitializeLayers();
+            // windowsManager.InitializeLayers();
         }
 
         private bool DisableEditorSpawningOptions()

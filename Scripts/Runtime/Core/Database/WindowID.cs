@@ -28,7 +28,7 @@ namespace BrunoMikoski.UIManager
 
         [NonSerialized]
         protected Window windowInstance;
-       public Window WindowInstance => windowInstance;
+        public Window WindowInstance => windowInstance;
 
        private WindowsManager windowsManager;
        
@@ -92,7 +92,7 @@ namespace BrunoMikoski.UIManager
             return false;
         }
         
-        public void SetWindowsManager(WindowsManager targetWindowsManager)
+        public void Initialize(WindowsManager targetWindowsManager)
         {
             this.windowsManager = targetWindowsManager;
         }

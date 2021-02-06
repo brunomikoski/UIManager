@@ -7,10 +7,10 @@ namespace BrunoMikoski.UIManager
 {
     public class InitialSetupEditorWindow : EditorWindow
     {
-        private DefaultAsset ScriptableObjectFolder;
-        private DefaultAsset GeneratedCodeFolder;
+        private DefaultAsset scriptableObjectFolder;
+        private DefaultAsset generatedCodeFolder;
 
-        public static InitialSetupEditorWindow GetWindowInstance()
+        private static InitialSetupEditorWindow GetWindowInstance()
         {
             return GetWindow<InitialSetupEditorWindow>("Setup UI Manager");
         }
@@ -27,11 +27,11 @@ namespace BrunoMikoski.UIManager
             {
                 EditorGUILayout.LabelField("Settings", EditorStyles.foldoutHeader);
                 EditorGUILayout.Space();
-                ScriptableObjectFolder = (DefaultAsset) EditorGUILayout.ObjectField("Scriptable Objects Folder",
-                    ScriptableObjectFolder, typeof(DefaultAsset), false);
+                scriptableObjectFolder = (DefaultAsset) EditorGUILayout.ObjectField("Scriptable Objects Folder",
+                    scriptableObjectFolder, typeof(DefaultAsset), false);
                 
-                GeneratedCodeFolder = (DefaultAsset) EditorGUILayout.ObjectField("Generated Code Folder",
-                    GeneratedCodeFolder, typeof(DefaultAsset), false);
+                generatedCodeFolder = (DefaultAsset) EditorGUILayout.ObjectField("Generated Code Folder",
+                    generatedCodeFolder, typeof(DefaultAsset), false);
 
                 
                 using (new EditorGUI.DisabledScope(!AreSettingsValid()))
@@ -48,15 +48,15 @@ namespace BrunoMikoski.UIManager
 
         private void PerformInitialSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<WindowID> windowIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs windowIDs))
             {
-                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(ScriptableObjectFolder, true,
+                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(scriptableObjectFolder, true,
                     "WindowIDs");
             }
-
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<LayerID> layerIDs))
+            
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
             {
-                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(ScriptableObjectFolder, true,
+                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(scriptableObjectFolder, true,
                     "LayerIDs");
             }
             
@@ -65,19 +65,17 @@ namespace BrunoMikoski.UIManager
             layerIDs.GetOrAddNew("Popup");
             layerIDs.GetOrAddNew("Overlay");
 
-
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<GroupID> groupIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
             {
-                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(ScriptableObjectFolder, true,
+                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(scriptableObjectFolder, true,
                     "GroupIDs");
             }
             groupIDs.GetOrAddNew("Main");
 
 
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(
-                out ScriptableObjectCollection<TransitionBase> transitions))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out Transitions transitions))
             {
-                transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
+                transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(scriptableObjectFolder, true,
                     "Transitions");
             }
             transitions.GetOrAddNew(typeof(ReverseTransition), "ReverseInTransition");
@@ -98,7 +96,7 @@ namespace BrunoMikoski.UIManager
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(groupIDs, "GroupIDsStatic");
             ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(transitions, "TransitionsStatic");
             
-            string generatedCodeFolderPath = AssetDatabase.GetAssetPath(GeneratedCodeFolder);
+            string generatedCodeFolderPath = AssetDatabase.GetAssetPath(generatedCodeFolder);
             
             ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(windowIDs, true);
             ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(layerIDs, true);
@@ -117,21 +115,21 @@ namespace BrunoMikoski.UIManager
 
         private bool AreSettingsValid()
         {
-            return ScriptableObjectFolder != null;
+            return scriptableObjectFolder != null;
         }
 
         public static bool NeedSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<WindowID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<WindowIDs>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<LayerID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<LayerIDs>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<GroupID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<GroupIDs>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetFirstCollectionFromCollectableType(out ScriptableObjectCollection<TransitionBase> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<Transitions>(out _))
                 return true;
             
             return false;

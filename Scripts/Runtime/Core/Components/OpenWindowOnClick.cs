@@ -9,12 +9,6 @@ namespace BrunoMikoski.UIManager
 
         protected override void OnClick()
         {
-            if (!targetWindow.IsValid())
-            {
-                Debug.LogError($"{nameof(targetWindow)} is not defined at {name}", this);
-                return;
-            }
-            
             targetWindow.Ref.Open();
         }
     }

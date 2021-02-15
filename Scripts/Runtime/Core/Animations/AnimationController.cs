@@ -18,8 +18,8 @@ namespace BrunoMikoski.UIManager.Animation
     public class AnimationController : MonoBehaviour
     {
         [SerializeReference]
-        private AnimationStepBase[] animationSteps;
-        public AnimationStepBase[] AnimationSteps => animationSteps;
+        private BaseAnimationStep[] animationSteps = new BaseAnimationStep[0];
+        public BaseAnimationStep[] AnimationSteps => animationSteps;
 
         // [ContextMenu("Play")]
         // public void Play()

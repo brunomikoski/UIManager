@@ -6,7 +6,7 @@ using UnityEngine;
 namespace BrunoMikoski.UIManager.Animation
 {
     [Serializable]
-    public class DOTweenAnimationStep : AnimationStepBase
+    public class DOTweenBaseAnimationStep : BaseAnimationStep
     {
         [SerializeField]
         protected float delay;
@@ -16,11 +16,11 @@ namespace BrunoMikoski.UIManager.Animation
         protected float duration = 1;
         public float Duration => duration;
         
-        [SerializeReference]
+        [SerializeReference, HideInInspector]
         private DOTweenSettingsBase[] instructionBase;
         public DOTweenSettingsBase[] InstructionBase => instructionBase;
 
-        public DOTweenAnimationStep()
+        public DOTweenBaseAnimationStep()
         {
             List<Type> tweenSettings = TypeUtility.GetAllSubclasses(typeof(DOTweenSettingsBase));
             List<DOTweenSettingsBase> availableAnimations = new List<DOTweenSettingsBase>();
@@ -40,6 +40,11 @@ namespace BrunoMikoski.UIManager.Animation
         public override void Play(ref float time)
         {
             
+        }
+
+        public override string ToString()
+        {
+            return "DOTween";
         }
     }
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BrunoMikoski.UIManager.Animation
 {
     [Serializable]
-    public class AnimationStepBase
+    public class BaseAnimationStep
     {
         [SerializeField]
         protected GameObject target;

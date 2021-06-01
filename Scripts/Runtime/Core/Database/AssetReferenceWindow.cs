@@ -1,2 +1,0 @@
-﻿#if USE_ADDRESSABLES
-#endif

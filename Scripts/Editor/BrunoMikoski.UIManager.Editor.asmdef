@@ -3,7 +3,8 @@
     "references": [
         "BrunoMikoski.UIManager",
         "BrunoMikoski.ScriptableObjectCollection",
-        "BrunoMikoski.ScriptableObjectCollection.Editor"
+        "BrunoMikoski.ScriptableObjectCollection.Editor",
+        "st.rect-ex.Runtime"
     ],
     "includePlatforms": [
         "Editor"

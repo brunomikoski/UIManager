@@ -2,25 +2,28 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
     [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
+    [DisallowMultipleComponent]
     public partial class WindowsManager : MonoBehaviour
     {
         [SerializeField]
         private WindowID initialWindowID;
 
         private Dictionary<LayerID, RectTransform> layerToRectTransforms = new Dictionary<LayerID, RectTransform>();
-        private Dictionary<LayerID, List<WindowID>> layerToWindows = new Dictionary<LayerID, List<WindowID>>();
-        private Dictionary<GroupID, List<WindowID>> groupToWindows = new Dictionary<GroupID, List<WindowID>>();
-        private List<WindowID> nullGroupWindows = new List<WindowID>();
         
         private List<WindowID> history = new List<WindowID>();
         
         private Window focusedWindow;
+        
+        private List<WindowID> availableWindows;
+        private List<GroupID> availableGroups;
+        private List<LayerID> availableLayers;
 
         private void Awake()
         {
@@ -32,32 +35,38 @@ namespace BrunoMikoski.UIManager
         {
             CleanupHierarchy();
 
-            InitializeLayers();
-            InitializeGroups();
+            availableWindows = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<WindowID>();
+            availableGroups = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<GroupID>();
+            availableLayers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<LayerID>();
+
+            
+            InitializeLayers();            
             InitializeWindows();
+        }
+
+        private void InitializeLayers()
+        {
+            for (int i = 0; i < availableLayers.Count; i++)
+                CreateLayer(availableLayers[i]);
         }
 
         private void InitializeWindows()
         {
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
-            {
-                WindowID windowID = WindowIDs.Values[i];
-                windowID.SetWindowsManager(this);
-            }
+            for (int i = 0; i < availableWindows.Count; i++)
+                availableWindows[i].Initialize(this);
         }
 
         private void LoadInitialWindows()
         {
             List<WindowID> initialWindowIDs = new List<WindowID>();
-            for (int i = 0; i < GroupIDs.Values.Count; i++)
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                GroupID groupID = GroupIDs.Values[i];
-                if (!groupID.AutoLoaded)
+                WindowID windowID = availableWindows[i];
+                if (windowID.GroupID != null && !windowID.GroupID.AutoLoaded)
                     continue;
-                initialWindowIDs.AddRange(groupToWindows[groupID]);
+                
+                initialWindowIDs.Add(windowID);
             }
-
-            initialWindowIDs.AddRange(nullGroupWindows);
 
             LoadWindows(OnInitialWindowsLoaded, initialWindowIDs.ToArray());
         }
@@ -113,6 +122,7 @@ namespace BrunoMikoski.UIManager
 
         private IEnumerator LoadWindowsEnumerator(Action<WindowID[]> onWindowsLoaded, params WindowID[] targetWindows)
         {
+            OnBeforeStartLoadingWindows(targetWindows);
             List<WindowID> loadingWindows = new List<WindowID>();
             for (int i = 0; i < targetWindows.Length; i++)
             {
@@ -120,7 +130,7 @@ namespace BrunoMikoski.UIManager
                 if (windowID.HasWindowInstance)
                     continue;
                 
-                StartCoroutine(InitializeWindowEnumerator(windowID));
+                StartCoroutine(InstantiateWindowEnumerator(windowID));
                 loadingWindows.Add(windowID);
             }
             bool allLoaded = false;
@@ -141,7 +151,18 @@ namespace BrunoMikoski.UIManager
                     yield return null;
             }
 
+            OnFinishLoadingWindows();
             onWindowsLoaded?.Invoke(targetWindows);
+        }
+
+        protected virtual void OnBeforeStartLoadingWindows(WindowID[] targetWindows)
+        {
+            
+        }
+        
+        protected virtual void OnFinishLoadingWindows()
+        {
+            
         }
 
         private void CleanupHierarchy()
@@ -160,30 +181,39 @@ namespace BrunoMikoski.UIManager
         
         public void LoadGroup(Action<GroupID[]> onGroupLoaded = null, params GroupID[] targetGroupIDs)
         {
-            List<WindowID> windows = new List<WindowID>();
-            for (int i = 0; i < targetGroupIDs.Length; i++)
-            {
-                windows.AddRange(groupToWindows[targetGroupIDs[i]]);
-            }
-
             LoadWindows(ids =>
             {
                 onGroupLoaded?.Invoke(targetGroupIDs);
-            }, windows.ToArray());
+            }, GetAllWindowsForGroups(targetGroupIDs).ToArray());
         }
         
         public void UnloadGroup(params GroupID[] targetGroupIDs)
         {
             UnloadGroup(null, targetGroupIDs);
         }
+
+        public List<WindowID> GetAllWindowsForGroups(params GroupID[] targetGroups)
+        {
+            List<WindowID> resultWindows = new List<WindowID>();
+            for (int i = 0; i < availableWindows.Count; i++)
+            {
+                WindowID windowID = availableWindows[i];
+                for (int j = 0; j < targetGroups.Length; j++)
+                {
+                    GroupID targetGroupID = targetGroups[j];
+                    if (windowID.GroupID != targetGroupID)
+                        continue;
+
+                    resultWindows.Add(windowID);
+                }
+            }
+
+            return resultWindows;
+        }
         
         public void UnloadGroup(Action<GroupID[]> onGroupsUnloaded = null, params GroupID[] targetGroupIDs)
         {
-            List<WindowID> windows = new List<WindowID>();
-            for (int i = 0; i < targetGroupIDs.Length; i++)
-            {
-                windows.AddRange(groupToWindows[targetGroupIDs[i]]);
-            }
+            List<WindowID> windows = GetAllWindowsForGroups(targetGroupIDs);
 
             UnloadWindows(ids =>
             {
@@ -191,59 +221,11 @@ namespace BrunoMikoski.UIManager
             }, windows.ToArray());
         }
 
-        // public void LoadGroup(GroupID targetGroupID)
-        // {
-        //     if (!groupToWindows.TryGetValue(targetGroupID, out List<WindowID> windowIDsFromGroup)) 
-        //         return;
-        //     
-        //     for (int i = 0; i < windowIDsFromGroup.Count; i++)
-        //     {
-        //         WindowID windowID = windowIDsFromGroup[i];
-        //         if (windowID.HasWindowInstance)
-        //             continue;
-        //
-        //         InitializeWindow(windowID);
-        //     }
-        // }
-        //
-        // public void UnloadGroup(GroupID targetGroupID)
-        // {
-        //     if (!groupToWindows.TryGetValue(targetGroupID, out List<WindowID> windowIDsFromGroup)) 
-        //         return;
-        //     
-        //     for (int i = 0; i < windowIDsFromGroup.Count; i++)
-        //     {
-        //         WindowID windowID = windowIDsFromGroup[i];
-        //         if(!windowID.HasWindowInstance)
-        //             continue;
-        //
-        //         DestroyWindow(windowID.WindowInstance);
-        //     }
-        // }
-        //
-        // private void DestroyWindow(Window windowInstance)
-        // {
-        //     Destroy(windowInstance.gameObject);
-        // }
-
         public void Open(WindowID windowID)
         {
             if (!windowID.HasWindowInstance)
             {
-                if (windowID.GroupID == null)
-                {
-                    LoadWindows(ids =>
-                    {
-                        Open(windowID);
-                    }, windowID);
-                    return;
-                }
-
-                List<WindowID> groupWindows = groupToWindows[windowID.GroupID];
-                LoadWindows(ids =>
-                {
-                    Open(windowID);
-                }, groupWindows.ToArray());
+                LoadWindows(ids => Open(windowID), windowID);
                 return;
             }
 
@@ -269,8 +251,10 @@ namespace BrunoMikoski.UIManager
             UpdateFocusedWindow();
 
             windowID.WindowInstance.Open(OnWindowInstanceOpened);
+
+            if (windowID.LayerID.IncludedOnHistory)
+                history.Add(windowID);
             
-            history.Add(windowID);
             DispatchTransition(previouslyOpenWindow, windowID.WindowInstance);
         }
 
@@ -282,12 +266,15 @@ namespace BrunoMikoski.UIManager
         private List<Window> GetAllOpenWindows()
         {
             List<Window> resultOpenWindows = new List<Window>();
-            for (int i = LayerIDs.Values.Count - 1; i >= 0; i--)
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                if (!TryGetOpenWindowsOfLayer(LayerIDs.Values[i], out List<Window> openWindows)) 
+                WindowID windowID = availableWindows[i];
+                
+                if (!windowID.HasWindowInstance)
                     continue;
-                    
-                resultOpenWindows.AddRange(openWindows);
+                if (!windowID.WindowInstance.IsOpen)
+                    continue;
+                resultOpenWindows.Add(windowID.WindowInstance);
             }
 
             return resultOpenWindows;
@@ -340,9 +327,9 @@ namespace BrunoMikoski.UIManager
 
         private void UpdateFocusedWindow()
         {
-            for (int i = LayerIDs.Values.Count - 1; i >= 0; i--)
+            for (int i = 0; i < availableLayers.Count; i++)
             {
-                LayerID layerID = LayerIDs.Values[i];
+                LayerID layerID = availableLayers[i];
                 if (TryGetOpenWindowsOfLayer(layerID, out List<Window> openWindows))
                 {
                     openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
@@ -378,18 +365,17 @@ namespace BrunoMikoski.UIManager
         private bool TryGetOpenWindowsOfLayer(LayerID layerID, out List<Window> resultWindows)
         {
             resultWindows = new List<Window>();
-            if (layerToWindows.TryGetValue(layerID, out List<WindowID> windowIDs))
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                for (int i = 0; i < windowIDs.Count; i++)
-                {
-                    WindowID windowID = windowIDs[i];
-                    if (!windowID.HasWindowInstance)
-                        continue;
-                    
- 
-                    if (windowID.WindowInstance.IsOpen)
-                        resultWindows.Add(windowID.WindowInstance);
-                }
+                WindowID windowID = availableWindows[i];
+
+                if (!windowID.HasWindowInstance)
+                    continue;
+                
+                if (windowID.LayerID != layerID)
+                    continue;
+                
+                resultWindows.Add(windowID.WindowInstance);
             }
 
             return resultWindows.Count > 0;
@@ -407,49 +393,17 @@ namespace BrunoMikoski.UIManager
             return false;
 
         }
-
-        public void InitializeLayers()
-        {
-            for (int i = 0; i < LayerIDs.Values.Count; i++)
-            {
-                CreateLayer(LayerIDs.Values[i]);
-                layerToWindows.Add(LayerIDs.Values[i], new List<WindowID>());
-            }
-
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
-            {
-                layerToWindows[WindowIDs.Values[i].LayerID].Add(WindowIDs.Values[i]);
-            }
-            
-        }
         
-        private void InitializeGroups()
-        {
-            for (int i = 0; i < GroupIDs.Values.Count; i++)
-            {
-                groupToWindows.Add(GroupIDs.Values[i], new List<WindowID>());
-            }
-            
-
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
-            {
-                WindowID windowID = WindowIDs.Values[i];
-
-                if (windowID.GroupID == null)
-                {
-                    nullGroupWindows.Add(windowID);
-                    continue;
-                }
-                
-                groupToWindows[windowID.GroupID].Add(windowID);
-            }
-        }
-
-        
-        private IEnumerator InitializeWindowEnumerator(WindowID windowID)
+        private IEnumerator InstantiateWindowEnumerator(WindowID windowID)
         {
             if (windowID.HasWindowInstance)
                 yield break;
+
+            if (windowID.LayerID == null)
+            {
+                Debug.LogError($"{windowID} has no layer assigned, Window will not be initialized", windowID);
+                yield break;
+            }
 
             yield return windowID.InstantiateEnumerator(this);
             windowID.WindowInstance.transform.SetParent(GetParentForLayer(windowID.LayerID), false);

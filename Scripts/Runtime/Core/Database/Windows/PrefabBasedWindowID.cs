@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -11,9 +12,13 @@ namespace BrunoMikoski.UIManager
 
         public override IEnumerator InstantiateEnumerator(WindowsManager windowsManager)
         {
-            windowPrefab.gameObject.SetActive(false);
+            if (windowPrefab == null)
+            {
+                Debug.LogError($"Window Prefab on {this} is null", this);
+                yield break;
+            }
             windowInstance = Instantiate(windowPrefab);
-            yield break;
+            windowInstance.name = $"{windowPrefab.name} [{this.name}]";
         }
 
         public override IEnumerator DestroyEnumerator()

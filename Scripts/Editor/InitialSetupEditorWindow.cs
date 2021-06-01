@@ -7,10 +7,10 @@ namespace BrunoMikoski.UIManager
 {
     public class InitialSetupEditorWindow : EditorWindow
     {
-        private DefaultAsset ScriptableObjectFolder;
-        private DefaultAsset GeneratedCodeFolder;
+        private DefaultAsset scriptableObjectFolder;
+        private DefaultAsset generatedCodeFolder;
 
-        public static InitialSetupEditorWindow GetWindowInstance()
+        private static InitialSetupEditorWindow GetWindowInstance()
         {
             return GetWindow<InitialSetupEditorWindow>("Setup UI Manager");
         }
@@ -27,11 +27,11 @@ namespace BrunoMikoski.UIManager
             {
                 EditorGUILayout.LabelField("Settings", EditorStyles.foldoutHeader);
                 EditorGUILayout.Space();
-                ScriptableObjectFolder = (DefaultAsset) EditorGUILayout.ObjectField("Scriptable Objects Folder",
-                    ScriptableObjectFolder, typeof(DefaultAsset), false);
+                scriptableObjectFolder = (DefaultAsset) EditorGUILayout.ObjectField("Scriptable Objects Folder",
+                    scriptableObjectFolder, typeof(DefaultAsset), false);
                 
-                GeneratedCodeFolder = (DefaultAsset) EditorGUILayout.ObjectField("Generated Code Folder",
-                    GeneratedCodeFolder, typeof(DefaultAsset), false);
+                generatedCodeFolder = (DefaultAsset) EditorGUILayout.ObjectField("Generated Code Folder",
+                    generatedCodeFolder, typeof(DefaultAsset), false);
 
                 
                 using (new EditorGUI.DisabledScope(!AreSettingsValid()))
@@ -48,68 +48,31 @@ namespace BrunoMikoski.UIManager
 
         private void PerformInitialSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> windowIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs windowIDs))
             {
-                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(ScriptableObjectFolder, true,
+                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(scriptableObjectFolder, true,
                     "WindowIDs");
             }
-
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> layerIDs))
+            
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
             {
-                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(ScriptableObjectFolder, true,
+                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(scriptableObjectFolder, true,
                     "LayerIDs");
             }
             
 
             layerIDs.GetOrAddNew("Main");
-            layerIDs.GetOrAddNew("Popup");
+            LayerID popup = layerIDs.GetOrAddNew("Popup");
+            popup.SetIncludedInHistory(false);
             layerIDs.GetOrAddNew("Overlay");
 
-
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> groupIDs))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
             {
-                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(ScriptableObjectFolder, true,
+                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(scriptableObjectFolder, true,
                     "GroupIDs");
             }
             groupIDs.GetOrAddNew("Main");
 
-
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(
-                out ScriptableObjectCollection<TransitionBase> transitions))
-            {
-                transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(ScriptableObjectFolder, true,
-                    "Transitions");
-            }
-            transitions.GetOrAddNew(typeof(ReverseTransition), "ReverseInTransition");
-            transitions.GetOrAddNew<FadeTransition>("FadeInTransition")
-                .SetAnimationValues(0, 1, 0.3f, Ease.Linear);
-            
-            transitions.GetOrAddNew<ScaleTransition>("ScaleInTransition")
-                .SetAnimationValues(Vector3.zero, Vector3.one, 0.6f, Ease.OutBack);
-            
-            
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(windowIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(layerIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(groupIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(transitions, true);
-
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(windowIDs, "WindowIDsStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(layerIDs, "LayerIDsStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(groupIDs, "GroupIDsStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(transitions, "TransitionsStatic");
-            
-            string generatedCodeFolderPath = AssetDatabase.GetAssetPath(GeneratedCodeFolder);
-            
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(windowIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(layerIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(groupIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(transitions, true);
-            
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(windowIDs, generatedCodeFolderPath);
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(layerIDs, generatedCodeFolderPath);
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(groupIDs, generatedCodeFolderPath);
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(transitions, generatedCodeFolderPath);
-            
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Close();
@@ -117,23 +80,20 @@ namespace BrunoMikoski.UIManager
 
         private bool AreSettingsValid()
         {
-            return ScriptableObjectFolder != null;
+            return scriptableObjectFolder != null;
         }
 
         public static bool NeedSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<WindowID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<WindowIDs>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<LayerID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<LayerIDs>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<GroupID> _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<GroupIDs>(out _))
                 return true;
-
-            if (!CollectionsRegistry.Instance.TryGetCollectionForType(out ScriptableObjectCollection<TransitionBase> _))
-                return true;
-            
+           
             return false;
         }
     }

@@ -73,42 +73,6 @@ namespace BrunoMikoski.UIManager
             }
             groupIDs.GetOrAddNew("Main");
 
-
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out Transitions transitions))
-            {
-                transitions = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<Transitions>(scriptableObjectFolder, true,
-                    "Transitions");
-            }
-            transitions.GetOrAddNew(typeof(ReverseTransition), "ReverseInTransition");
-            transitions.GetOrAddNew<FadeTransition>("FadeInTransition")
-                .SetAnimationValues(0, 1, 0.3f, Ease.Linear);
-            
-            transitions.GetOrAddNew<ScaleTransition>("ScaleInTransition")
-                .SetAnimationValues(Vector3.zero, Vector3.one, 0.6f, Ease.OutBack);
-            
-            
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(windowIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(layerIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(groupIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFile(transitions, true);
-
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(windowIDs, "WindowIDsStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(layerIDs, "LayerIDsStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(groupIDs, "GroupIDsStatic");
-            ScriptableObjectCollectionSettings.Instance.SetGenerateCustomStaticFileName(transitions, "TransitionsStatic");
-            
-            string generatedCodeFolderPath = AssetDatabase.GetAssetPath(generatedCodeFolder);
-            
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(windowIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(layerIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(groupIDs, true);
-            ScriptableObjectCollectionSettings.Instance.SetOverridingStaticFileLocation(transitions, true);
-            
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(windowIDs, generatedCodeFolderPath);
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(layerIDs, generatedCodeFolderPath);
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(groupIDs, generatedCodeFolderPath);
-            ScriptableObjectCollectionSettings.Instance.SetStaticFileFolderForCollection(transitions, generatedCodeFolderPath);
-            
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Close();
@@ -129,10 +93,7 @@ namespace BrunoMikoski.UIManager
 
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType<GroupIDs>(out _))
                 return true;
-
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<Transitions>(out _))
-                return true;
-            
+           
             return false;
         }
     }

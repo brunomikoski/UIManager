@@ -43,7 +43,7 @@ namespace BrunoMikoski.UIManager.Animation
         /// <returns>The string name of the field</returns>
         protected string FieldPath<TValue>(Expression<Func<T, TValue>> expr)
         {
-            return ReflectionHelpers.GetFieldPath(expr);
+            return ReflectionUtility.GetFieldPath(expr);
         }
 
         /// <summary>Obsolete, do not use.  Use the overload, which is more performant</summary>

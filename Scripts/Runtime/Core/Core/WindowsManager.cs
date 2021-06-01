@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,6 +20,10 @@ namespace BrunoMikoski.UIManager
         private List<WindowID> history = new List<WindowID>();
         
         private Window focusedWindow;
+        
+        private List<WindowID> availableWindows;
+        private List<GroupID> availableGroups;
+        private List<LayerID> availableLayers;
 
         private void Awake()
         {
@@ -30,28 +35,33 @@ namespace BrunoMikoski.UIManager
         {
             CleanupHierarchy();
 
+            availableWindows = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<WindowID>();
+            availableGroups = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<GroupID>();
+            availableLayers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<LayerID>();
+
+            
             InitializeLayers();            
             InitializeWindows();
         }
 
         private void InitializeLayers()
         {
-            for (int i = 0; i < LayerIDs.Values.Count; i++)
-                CreateLayer(LayerIDs.Values[i]);
+            for (int i = 0; i < availableLayers.Count; i++)
+                CreateLayer(availableLayers[i]);
         }
 
         private void InitializeWindows()
         {
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
-                WindowIDs.Values[i].Initialize(this);
+            for (int i = 0; i < availableWindows.Count; i++)
+                availableWindows[i].Initialize(this);
         }
 
         private void LoadInitialWindows()
         {
             List<WindowID> initialWindowIDs = new List<WindowID>();
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                WindowID windowID = WindowIDs.Values[i];
+                WindowID windowID = availableWindows[i];
                 if (windowID.GroupID != null && !windowID.GroupID.AutoLoaded)
                     continue;
                 
@@ -185,9 +195,9 @@ namespace BrunoMikoski.UIManager
         public List<WindowID> GetAllWindowsForGroups(params GroupID[] targetGroups)
         {
             List<WindowID> resultWindows = new List<WindowID>();
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                WindowID windowID = WindowIDs.Values[i];
+                WindowID windowID = availableWindows[i];
                 for (int j = 0; j < targetGroups.Length; j++)
                 {
                     GroupID targetGroupID = targetGroups[j];
@@ -256,9 +266,9 @@ namespace BrunoMikoski.UIManager
         private List<Window> GetAllOpenWindows()
         {
             List<Window> resultOpenWindows = new List<Window>();
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                WindowID windowID = WindowIDs.Values[i];
+                WindowID windowID = availableWindows[i];
                 
                 if (!windowID.HasWindowInstance)
                     continue;
@@ -317,9 +327,9 @@ namespace BrunoMikoski.UIManager
 
         private void UpdateFocusedWindow()
         {
-            for (int i = 0; i < LayerIDs.Values.Count; i++)
+            for (int i = 0; i < availableLayers.Count; i++)
             {
-                LayerID layerID = LayerIDs.Values[i];
+                LayerID layerID = availableLayers[i];
                 if (TryGetOpenWindowsOfLayer(layerID, out List<Window> openWindows))
                 {
                     openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
@@ -355,9 +365,9 @@ namespace BrunoMikoski.UIManager
         private bool TryGetOpenWindowsOfLayer(LayerID layerID, out List<Window> resultWindows)
         {
             resultWindows = new List<Window>();
-            for (int i = 0; i < WindowIDs.Values.Count; i++)
+            for (int i = 0; i < availableWindows.Count; i++)
             {
-                WindowID windowID = WindowIDs.Values[i];
+                WindowID windowID = availableWindows[i];
 
                 if (!windowID.HasWindowInstance)
                     continue;
@@ -388,6 +398,12 @@ namespace BrunoMikoski.UIManager
         {
             if (windowID.HasWindowInstance)
                 yield break;
+
+            if (windowID.LayerID == null)
+            {
+                Debug.LogError($"{windowID} has no layer assigned, Window will not be initialized", windowID);
+                yield break;
+            }
 
             yield return windowID.InstantiateEnumerator(this);
             windowID.WindowInstance.transform.SetParent(GetParentForLayer(windowID.LayerID), false);

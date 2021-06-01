@@ -7,13 +7,43 @@ using System.Text;
 
 namespace BrunoMikoski.UIManager.Utility
 {
-    public static partial class ReflectionHelpers
+    public static partial class ReflectionUtility
     {
-        /// <summary>Copy the fields from one object to another</summary>
-        /// <param name="src">The source object to copy from</param>
-        /// <param name="dst">The destination object to copy to</param>
-        /// <param name="bindingAttr">The mask to filter the attributes.
-        /// Only those fields that get caught in the filter will be copied</param>
+        private static Dictionary<Type, List<FieldInfo>> typeToModifiableFieldsCache = new Dictionary<Type, List<FieldInfo>>();
+        private static Dictionary<string, Type> managedReferenceFullTypeNameToTypeCache = new Dictionary<string, Type>();
+
+        public static Type GetTypeFromManagedFullTypeName(string targetManagedFullTypeName, bool ignoreCache = false)
+        {
+            if (!ignoreCache && managedReferenceFullTypeNameToTypeCache.TryGetValue(targetManagedFullTypeName, out Type type))
+                return type;
+            
+            string[] typeInfo = targetManagedFullTypeName.Split(' ');
+            type = Type.GetType($"{typeInfo[1]}, {typeInfo[0]}");
+            managedReferenceFullTypeNameToTypeCache.Add(targetManagedFullTypeName, type);
+
+            return type;
+        }
+        
+        public static List<FieldInfo> GetModifiableFields(Type targetType, bool recursive = true, bool ignoreCache = false)
+        {
+            if (!ignoreCache && typeToModifiableFieldsCache.TryGetValue(targetType, out List<FieldInfo> result))
+                return result;
+
+            result = new List<FieldInfo>();
+            FieldInfo[] fis = targetType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            for (int i = 0; i < fis.Length; i++)
+            {
+                FieldInfo info = fis[i];
+                if (info.IsNotSerialized)
+                    continue;
+
+                result.Add(info);
+            }
+            
+            typeToModifiableFieldsCache.Add(targetType, result);
+            return result;
+        }
+        
         public static void CopyFields(Object src, object dst, BindingFlags bindingAttr = BindingFlags.Public
                                                                                          | BindingFlags.NonPublic
                                                                                          | BindingFlags.Instance)
@@ -28,10 +58,6 @@ namespace BrunoMikoski.UIManager.Utility
             }
         }
 
-        /// <summary>Search the assembly for all types that match a predicate</summary>
-        /// <param name="assembly">The assembly to search</param>
-        /// <param name="predicate">The type to look for</param>
-        /// <returns>A list of types found in the assembly that inherit from the predicate</returns>
         public static IEnumerable<Type> GetTypesInAssembly(Assembly assembly, Predicate<Type> predicate)
         {
             if (assembly == null)
@@ -52,12 +78,6 @@ namespace BrunoMikoski.UIManager.Utility
             return types;
         }
 
-        /// <summary>Cheater extension to access internal field of an object</summary>
-        /// <typeparam name="T">The field type</typeparam>
-        /// <param name="type">The type of the field</param>
-        /// <param name="obj">The object to access</param>
-        /// <param name="memberName">The string name of the field to access</param>
-        /// <returns>The value of the field in the objects</returns>
         public static T AccessInternalField<T>(this Type type, object obj, string memberName)
         {
             if (string.IsNullOrEmpty(memberName) || (type == null))
@@ -76,12 +96,7 @@ namespace BrunoMikoski.UIManager.Utility
             return default(T);
         }
         
-        /// <summary>Get the object owner of a field.  This method processes
-        /// the '.' separator to get from the object that owns the compound field
-        /// to the object that owns the leaf field</summary>
-        /// <param name="path">The name of the field, which may contain '.' separators</param>
-        /// <param name="obj">the owner of the compound field</param>
-        /// <returns>The object owner of the field</returns>
+
         public static object GetParentObject(string path, object obj)
         {
             string[] fields = path.Split('.');
@@ -97,12 +112,6 @@ namespace BrunoMikoski.UIManager.Utility
             return GetParentObject(string.Join(".", fields, 1, fields.Length - 1), obj);
         }
 
-        /// <summary>Returns a string path from an expression - mostly used to retrieve serialized properties
-        /// without hardcoding the field path. Safer, and allows for proper refactoring.</summary>
-        /// <typeparam name="TType">Magic expression</typeparam>
-        /// <typeparam name="TValue">Magic expression</typeparam>
-        /// <param name="expr">Magic expression</param>
-        /// <returns>The string version of the field path</returns>
         public static string GetFieldPath<TType, TValue>(Expression<Func<TType, TValue>> expr)
         {
             MemberExpression me;

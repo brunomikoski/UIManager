@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class LayerID : CollectableScriptableObject
+    public class LayerID : ScriptableObjectCollectionItem
     {
         [SerializeField]
         private LayerBehaviour behaviour = LayerBehaviour.Exclusive;

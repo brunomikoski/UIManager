@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using BrunoMikoski.AnimationSequencer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,6 +14,12 @@ namespace BrunoMikoski.UIManager
 
         [SerializeField] 
         private bool disableInteractionWhileTransitioning = true;
+
+        [SerializeField]
+        private AnimationSequencerController transitionIn;
+        
+        [SerializeField]
+        private AnimationSequencerController transitionOut;
         
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
@@ -144,27 +151,17 @@ namespace BrunoMikoski.UIManager
         
         protected virtual IEnumerator TransiteInEnumerator()
         {
-            if (windowID.TryGetTransition(TransitionType.TransitionIn, out AnimatedTransition animatedTransition,
-                out bool playBackwards))
-            {
-                animatedTransition.BeforeTransition(this);
-                gameObject.SetActive(true);
-                yield return animatedTransition.ExecuteEnumerator(this, playBackwards);
-            }
-            else
-            {
-                gameObject.SetActive(true);
-            }
+            gameObject.SetActive(true);
+ 
+            if (transitionIn)
+                yield return transitionIn.PlayEnumerator();
         }
         
         protected virtual IEnumerator TransiteOutEnumerator()
         {
-            if (windowID.TryGetTransition(TransitionType.TransitionOut, out AnimatedTransition animatedTransition,
-                out bool playBackwards))
-            {
-                animatedTransition.BeforeTransition(this);
-                yield return animatedTransition.ExecuteEnumerator(this, playBackwards);
-            }
+            if (transitionOut)
+                yield return transitionOut.PlayEnumerator();
+            
             gameObject.SetActive(false);
         }
 

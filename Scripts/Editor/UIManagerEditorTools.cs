@@ -1,11 +1,9 @@
-﻿using BrunoMikoski.ScriptableObjectCollections;
-using UnityEditor;
+﻿using UnityEditor;
 
 namespace BrunoMikoski.UIManager
 {
     public static class UIManagerEditorTools 
     {
-
         [MenuItem("Tools/UI Manager/Initial Setup")]
         public static void InitialSetup()
         {
@@ -15,8 +13,7 @@ namespace BrunoMikoski.UIManager
         [MenuItem("Tools/UI Manager/Initial Setup", true)]
         public static bool InitialSetup_Validator()
         {
-            return !InitialSetupEditorWindow.NeedSetup();
+            return InitialSetupEditorWindow.NeedSetup();
         }
     }
- 
 }

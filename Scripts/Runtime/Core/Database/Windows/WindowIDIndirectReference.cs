@@ -5,11 +5,7 @@ using UnityEngine;
 namespace BrunoMikoski.UIManager
 {
     [Serializable]
-    public sealed class WindowIDIndirectReference : CollectableIndirectReference<WindowID>
+    public sealed class WindowIDIndirectReference : CollectionItemIndirectReference<WindowID>
     {
-#if UNITY_EDITOR
-        [SerializeField]
-        private WindowID editorAsset;
-#endif
     }
 }

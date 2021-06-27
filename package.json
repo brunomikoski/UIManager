@@ -1,7 +1,7 @@
 {
   "name": "com.brunomikoski.uimanager",
   "displayName": "UI Manager",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "unity": "2018.4",
   "description": "UI Manager",
   "keywords": [
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "com.brunomikoski.animationsequencer": "0.1.6",
-    "com.brunomikoski.scriptableobjectcollection": "1.2.9"
+    "com.brunomikoski.scriptableobjectcollection": "1.6.3"
   },
   "type": "library"
 }

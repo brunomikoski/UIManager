@@ -75,6 +75,7 @@ namespace BrunoMikoski.UIManager
         {
             windowsManager = targetWindowsManager;
             windowID = targetWindowID;
+            targetWindowID.SetWindowInstance(this);
             initialized = true;
             DispatchWindowInitialized();
         }

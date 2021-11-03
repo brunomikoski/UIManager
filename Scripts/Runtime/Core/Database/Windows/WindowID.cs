@@ -44,6 +44,10 @@ namespace BrunoMikoski.UIManager
         public abstract IEnumerator InstantiateEnumerator(WindowsManager windowsManager);
         public abstract IEnumerator DestroyEnumerator();
 
-       
+
+        public void SetWindowInstance(Window targetWindowInstance)
+        {
+            windowInstance = targetWindowInstance;
+        }
     }
 }

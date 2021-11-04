@@ -188,7 +188,7 @@ namespace BrunoMikoski.UIManager
             openRoutine = null;
         }
         
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
             StopTransitionCoroutines();
         }

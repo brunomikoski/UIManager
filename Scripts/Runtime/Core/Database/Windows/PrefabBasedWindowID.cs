@@ -1,5 +1,4 @@
-using System;
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace BrunoMikoski.UIManager
@@ -9,23 +8,26 @@ namespace BrunoMikoski.UIManager
         [Header("References")]
         [SerializeField]
         private Window windowPrefab;
-
-        public override IEnumerator InstantiateEnumerator(WindowsManager windowsManager)
+       
+        public override async UniTask InstantiateAsync()
         {
             if (windowPrefab == null)
             {
                 Debug.LogError($"Window Prefab on {this} is null", this);
-                yield break;
             }
-            windowInstance = Instantiate(windowPrefab);
-            windowInstance.name = $"{windowPrefab.name} [{this.name}]";
+            else
+            {
+                windowInstance = Instantiate(windowPrefab);
+                windowInstance.name = $"{windowPrefab.name} [{this.name}]";
+            }
         }
 
-        public override IEnumerator DestroyEnumerator()
+        public override async UniTask DestroyAsync()
         {
+            if (windowInstance == null)
+                return;
+
             Destroy(windowInstance.gameObject);
-            windowInstance = null;
-            yield break;
         }
     }
 }

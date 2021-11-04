@@ -1,11 +1,13 @@
 {
     "name": "BrunoMikoski.UIManager",
+    "rootNamespace": "",
     "references": [
         "BrunoMikoski.ScriptableObjectCollection",
         "DOTween.Modules",
         "Unity.Addressables",
         "Unity.ResourceManager",
-        "BrunoMikoski.AnimationSequencer"
+        "BrunoMikoski.AnimationSequencer",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

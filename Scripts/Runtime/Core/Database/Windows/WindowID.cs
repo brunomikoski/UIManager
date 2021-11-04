@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
+using System.Threading.Tasks;
 using BrunoMikoski.ScriptableObjectCollections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace BrunoMikoski.UIManager
@@ -40,14 +42,13 @@ namespace BrunoMikoski.UIManager
         {
             this.windowsManager = targetWindowsManager;
         }
-
-        public abstract IEnumerator InstantiateEnumerator(WindowsManager windowsManager);
-        public abstract IEnumerator DestroyEnumerator();
-
-
+        
         public void SetWindowInstance(Window targetWindowInstance)
         {
             windowInstance = targetWindowInstance;
         }
+
+        public abstract UniTask InstantiateAsync();
+        public abstract UniTask DestroyAsync();
     }
 }

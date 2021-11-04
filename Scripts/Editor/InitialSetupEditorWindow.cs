@@ -50,14 +50,12 @@ namespace BrunoMikoski.UIManager
         {
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs windowIDs))
             {
-                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(scriptableObjectFolder, true,
-                    "WindowIDs");
+                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(scriptableObjectFolder, "WindowIDs");
             }
             
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
             {
-                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(scriptableObjectFolder, true,
-                    "LayerIDs");
+                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(scriptableObjectFolder, "LayerIDs");
             }
             
 
@@ -68,8 +66,7 @@ namespace BrunoMikoski.UIManager
 
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
             {
-                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(scriptableObjectFolder, true,
-                    "GroupIDs");
+                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(scriptableObjectFolder, "GroupIDs");
             }
             groupIDs.GetOrAddNew("Main");
 

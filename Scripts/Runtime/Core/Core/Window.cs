@@ -21,6 +21,10 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private AnimationSequencerController transitionOut;
         
+        [SerializeField]
+        private WindowID windowID;
+        public WindowID WindowID => windowID;
+
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
         {
@@ -58,9 +62,6 @@ namespace BrunoMikoski.UIManager
         private WindowsManager windowsManager;
         public WindowsManager WindowsManager => windowsManager;
 
-        private WindowID windowID;
-        public WindowID WindowID => windowID;
-
         private bool isOpen;
         public bool IsOpen => isOpen;
         
@@ -75,7 +76,6 @@ namespace BrunoMikoski.UIManager
         {
             windowsManager = targetWindowsManager;
             windowID = targetWindowID;
-            targetWindowID.SetWindowInstance(this);
             initialized = true;
             DispatchWindowInitialized();
         }

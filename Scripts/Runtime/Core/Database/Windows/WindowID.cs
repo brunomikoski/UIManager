@@ -33,6 +33,14 @@ namespace BrunoMikoski.UIManager
             }
         }
 
+        public bool IsOpen()
+        {
+            if (!HasWindowInstance)
+                return false;
+
+            return windowInstance.IsOpen;
+        }
+
         public void Open()
         {
             this.windowsManager.Open(this);

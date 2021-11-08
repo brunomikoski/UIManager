@@ -29,5 +29,5 @@ namespace BrunoMikoski.UIManager
 
             Destroy(windowInstance.gameObject);
         }
-    }
+   }
 }

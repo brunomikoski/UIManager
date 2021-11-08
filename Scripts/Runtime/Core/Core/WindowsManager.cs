@@ -143,7 +143,10 @@ namespace BrunoMikoski.UIManager
             return resultWindows;
         }
         
-       
+        public void Open(Window window)
+        {
+            Open(window.WindowID);
+        }
 
         public void Open(WindowID windowID)
         {
@@ -421,5 +424,6 @@ namespace BrunoMikoski.UIManager
 
             await windowID.DestroyAsync();
         }
+
     }
 }

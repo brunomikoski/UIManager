@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public sealed class PrefabBasedWindowID : WindowID
+    public class PrefabBasedWindowID : WindowID
     {
         [Header("References")]
         [SerializeField]

@@ -62,7 +62,7 @@ You can also install via git URL by adding this entry in your **manifest.json**
 
 ### Unity Package Manager
 ```
-from Window->Package Manager, click on the + sign and Add from git: https://github.com/badawe/ScriptableObjectCollection.git
+from Window->Package Manager, click on the + sign and Add from git: https://github.com/brunomikoski/UIManager.git
 ```
 
 ## License TL:DR

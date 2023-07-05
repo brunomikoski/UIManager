@@ -1,3 +1,4 @@
+using System.IO;
 using BrunoMikoski.ScriptableObjectCollections;
 using DG.Tweening;
 using UnityEditor;
@@ -50,12 +51,12 @@ namespace BrunoMikoski.UIManager
         {
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs windowIDs))
             {
-                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(scriptableObjectFolder, "WindowIDs");
+                windowIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<WindowIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Windows"), "WindowIDs");
             }
             
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
             {
-                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(scriptableObjectFolder, "LayerIDs");
+                layerIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<LayerIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Layers"), "LayerIDs");
             }
             
 
@@ -66,7 +67,7 @@ namespace BrunoMikoski.UIManager
 
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
             {
-                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(scriptableObjectFolder, "GroupIDs");
+                groupIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<GroupIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Groups"), "GroupIDs");
             }
             groupIDs.GetOrAddNew("Main");
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using BrunoMikoski.AnimationSequencer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,12 +14,6 @@ namespace BrunoMikoski.UIManager
         [SerializeField] 
         private bool disableInteractionWhileTransitioning = true;
 
-        [SerializeField]
-        private AnimationSequencerController transitionIn;
-        
-        [SerializeField]
-        private AnimationSequencerController transitionOut;
-        
         [SerializeField]
         private WindowID windowID;
         public WindowID WindowID => windowID;
@@ -153,17 +146,13 @@ namespace BrunoMikoski.UIManager
         protected virtual IEnumerator TransiteInEnumerator()
         {
             gameObject.SetActive(true);
- 
-            if (transitionIn)
-                yield return transitionIn.PlayEnumerator();
+            yield return null;
         }
         
         protected virtual IEnumerator TransiteOutEnumerator()
         {
-            if (transitionOut)
-                yield return transitionOut.PlayEnumerator();
-            
             gameObject.SetActive(false);
+            yield return null;
         }
 
         public virtual void OnGainFocus()

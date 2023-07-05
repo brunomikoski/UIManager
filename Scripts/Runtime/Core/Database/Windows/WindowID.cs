@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Threading.Tasks;
 using BrunoMikoski.ScriptableObjectCollections;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public abstract class WindowID : ScriptableObjectCollectionItem
+    public  class WindowID : ScriptableObjectCollectionItem
     {
         [SerializeField]
         private LayerID layerID;
@@ -43,12 +40,12 @@ namespace BrunoMikoski.UIManager
 
         public void Open()
         {
-            this.windowsManager.Open(this);
+            windowsManager.Open(this);
         }
         
         public void Initialize(WindowsManager targetWindowsManager)
         {
-            this.windowsManager = targetWindowsManager;
+            windowsManager = targetWindowsManager;
         }
         
         public void SetWindowInstance(Window targetWindowInstance)
@@ -56,7 +53,9 @@ namespace BrunoMikoski.UIManager
             windowInstance = targetWindowInstance;
         }
 
-        public abstract UniTask InstantiateAsync();
-        public abstract UniTask DestroyAsync();
+        public virtual Window GetWindowPrefab()
+        {
+            return windowInstance;
+        }
     }
 }

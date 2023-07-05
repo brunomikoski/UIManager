@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using BrunoMikoski.ScriptableObjectCollections;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
+    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler))]
     [DisallowMultipleComponent]
     public partial class WindowsManager : MonoBehaviour
     {
@@ -15,9 +14,9 @@ namespace BrunoMikoski.UIManager
         private WindowID[] initialWindows;
 
 
-        private Dictionary<LayerID, RectTransform> layerToRectTransforms = new Dictionary<LayerID, RectTransform>();
+        private Dictionary<LayerID, RectTransform> layerToRectTransforms = new();
         
-        private List<WindowID> history = new List<WindowID>();
+        private List<WindowID> history = new();
         
         private Window focusedWindow;
         
@@ -59,7 +58,10 @@ namespace BrunoMikoski.UIManager
                 
                 List<WindowID> autoLoadedWindows = GetAllWindowsFromGroups(groupID);
                 for (int j = 0; j < autoLoadedWindows.Count; j++)
-                    InstantiateWindow(autoLoadedWindows[j]);
+                {
+                    WindowID autoLoadedWindow = autoLoadedWindows[j];
+                    InstantiateWindow(autoLoadedWindow);
+                }
             }
         }
 
@@ -77,7 +79,7 @@ namespace BrunoMikoski.UIManager
                     continue;
                 }
 
-                SetupWindowInstance(hierarchyWindow);
+                InitializeWindowInstance(hierarchyWindow);
             }
 
             for (int i = 0; i < toBeDestroyedWindow.Count; i++)
@@ -112,16 +114,11 @@ namespace BrunoMikoski.UIManager
 
         private void InstantiateWindow(WindowID windowID)
         {
-            InstantiateWindowAsync(windowID).Forget();
-        }
-
-        private async UniTask InstantiateWindowAsync(WindowID windowID)
-        {
             if (windowID.HasWindowInstance)
                 return;
-
-            await windowID.InstantiateAsync();
-            SetupWindowInstance(windowID.WindowInstance);
+            
+            Window windowInstance = Instantiate(windowID.GetWindowPrefab());
+            InitializeWindowInstance(windowInstance);
         }
 
         private List<WindowID> GetAllWindowsFromGroups(params GroupID[] targetGroups)
@@ -150,14 +147,9 @@ namespace BrunoMikoski.UIManager
 
         public void Open(WindowID windowID)
         {
-           OpenAsync(windowID).Forget();
-        }
-
-        public async UniTask OpenAsync(WindowID windowID)
-        {
             Initialize();
             if (!windowID.HasWindowInstance)
-                await InstantiateWindowAsync(windowID);
+                CreateWindowInstanceForWindowID(windowID);
 
             if (IsWindowOpen(windowID))
                 return;
@@ -330,26 +322,44 @@ namespace BrunoMikoski.UIManager
 
         }
 
-        private void SetupWindowInstance(Window windowInstance)
+
+        private void CreateWindowInstanceForWindowID(WindowID targetWindowID)
+        {
+            Window windowPrefab = targetWindowID.GetWindowPrefab();
+            if (windowPrefab == null)
+            {
+                Debug.LogError($"Missing Window Prefab for WindowID {targetWindowID}");
+                return;
+            }
+            Window windowInstance = Instantiate(windowPrefab, GetParentForLayer(targetWindowID.LayerID), false);
+            InitializeWindowInstance(windowInstance);
+        }
+        
+        private void InitializeWindowInstance(Window windowInstance)
         {
             WindowID windowID = windowInstance.WindowID;
-
             LayerID layerID = windowID.LayerID;
             if (layerID == null)
             {
                 layerID = availableLayers[0];
                 Debug.LogWarning($"WindowID {windowID} doesn't have a LayerID assignedToID, using first one available {layerID}");
             }
+
+            RectTransform parentLayer = GetParentForLayer(windowInstance.WindowID.LayerID);
+            if (windowInstance.RectTransform.parent != parentLayer)
+                windowInstance.RectTransform.SetParent(parentLayer, false);
             
+            windowInstance.gameObject.SetActive(false);
+            windowInstance.Initialize(this, windowID);
             windowID.SetWindowInstance(windowInstance);
-            windowID.WindowInstance.transform.SetParent(GetParentForLayer(windowID.LayerID), false);
-            windowID.WindowInstance.gameObject.SetActive(false);
-            windowID.WindowInstance.Initialize(this, windowID);
             DispatchWindowEvent(WindowEvent.OnWindowInitialized, windowID.WindowInstance);
         }
 
         private RectTransform GetParentForLayer(LayerID layerID)
         {
+            if (layerID == null)
+                return layerToRectTransforms[availableLayers[0]];
+            
             return layerToRectTransforms[layerID];
         }
 
@@ -362,7 +372,7 @@ namespace BrunoMikoski.UIManager
 
             if (layerTransform == null)
             {
-                GameObject layerGO = new GameObject(targetLayer.name, typeof(RectTransform));
+                GameObject layerGO = new(targetLayer.name, typeof(RectTransform));
                 layerGO.transform.SetParent(transform, false);
                 layerTransform = layerGO.transform;
             }
@@ -381,49 +391,28 @@ namespace BrunoMikoski.UIManager
 
         public void LoadGroup(params GroupID[] targetGroupToLoad)
         {
-            LoadGroupAsync(targetGroupToLoad).Forget();
-        }
-
-        private async UniTask LoadGroupAsync(params GroupID[] targetGroupToLoad)
-        {
             Initialize();
             
             List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToLoad);
-            List<UniTask> loadingTasks = new List<UniTask>();
 
             for (int i = 0; i < allWindows.Count; i++)
-            {
-                loadingTasks.Add(InstantiateWindowAsync(allWindows[i]));
-            }
-
-            await UniTask.WhenAll(loadingTasks);
+                CreateWindowInstanceForWindowID(allWindows[i]);
         }
 
         public void UnloadGroup(params GroupID[] targetGroupToUnload)
         {
             Initialize();
-            UnloadGroupAsync(targetGroupToUnload).Forget();
-        }
-
-        private async UniTask UnloadGroupAsync(params GroupID[] targetGroupToUnload)
-        {
             List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToUnload);
-            List<UniTask> unloadingTasks = new List<UniTask>();
             for (int i = 0; i < allWindows.Count; i++)
-            {
-                unloadingTasks.Add(UnloadWindowAsync(allWindows[i]));
-            }
-
-            await UniTask.WhenAll(unloadingTasks);
+                DestroyWindowInstance(allWindows[i]);
         }
 
-        private async UniTask UnloadWindowAsync(WindowID windowID)
+        private void DestroyWindowInstance(WindowID windowID)
         {
             if (!windowID.HasWindowInstance)
                 return;
 
-            await windowID.DestroyAsync();
+            Destroy(windowID.WindowInstance);
         }
-
     }
 }

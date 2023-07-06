@@ -1,6 +1,8 @@
 ﻿using System;
 using BrunoMikoski.ScriptableObjectCollections;
+using BrunoMikoski.ScriptableObjectCollections.Picker;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace BrunoMikoski.UIManager
 {
@@ -10,9 +12,10 @@ namespace BrunoMikoski.UIManager
         private LayerID layerID;
         public LayerID LayerID => layerID;
 
+        [FormerlySerializedAs("groupID")]
         [SerializeField]
-        private GroupID groupID;
-        public GroupID GroupID => groupID;
+        private CollectionItemPicker<GroupID> group;
+        public CollectionItemPicker<GroupID> Group => group;
 
         [NonSerialized]
         protected Window windowInstance;

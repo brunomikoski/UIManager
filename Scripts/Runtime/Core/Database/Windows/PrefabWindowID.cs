@@ -6,7 +6,8 @@ namespace BrunoMikoski.UIManager
     {
         [SerializeField]
         private Window windowPrefab;
-        
+        public Window WindowPrefab => windowPrefab;
+
         public override Window GetWindowPrefab()
         {
             return windowPrefab;

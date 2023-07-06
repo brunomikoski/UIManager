@@ -1,6 +1,5 @@
 #if USE_ADDRESSABLES
 using System;
-using System.Collections;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -11,7 +10,8 @@ namespace BrunoMikoski.UIManager
     {
         [SerializeField] 
         private AssetReferenceGameObject windowPrefabAssetRef;
-        
+        public AssetReferenceGameObject WindowPrefabAssetRef => windowPrefabAssetRef;
+
         [NonSerialized]
         private Window cachedWindowPrefab;
 
@@ -23,8 +23,9 @@ namespace BrunoMikoski.UIManager
             if (cachedWindowPrefab == null)
             {
                 Debug.LogWarning(
-                    $"{this.name} implements IAsyncPrefabLoader but it's not loaded yet, please make sure to load the group {GroupID} before trying to get the prefab");
+                    $"{name} implements IAsyncPrefabLoader but it's not loaded yet, please make sure to load the group {Group} before trying to get the prefab");
                 GetOrCreateLoadingOperation();
+                loadingOperation.Value.WaitForCompletion();
                 CacheWindowPrefabFromLoadingOperation();
             }
             return cachedWindowPrefab;
@@ -36,18 +37,28 @@ namespace BrunoMikoski.UIManager
                 return;
 
             if (!windowPrefabAssetRef.RuntimeKeyIsValid())
-                return;
+            {
+                throw new InvalidKeyException(
+                    $"The key {windowPrefabAssetRef.RuntimeKey} is not valid, please make sure to set the correct key on the AddressableWindowID {name}");
+            }
             
-            loadingOperation = windowPrefabAssetRef.InstantiateAsync();
+            loadingOperation = windowPrefabAssetRef.LoadAssetAsync<GameObject>();
         }
 
-        IEnumerator IAsyncPrefabLoader.LoadWindowPrefab()
+        void IAsyncPrefabLoader.LoadPrefab()
         {
+            if (cachedWindowPrefab != null)
+                return;
+            
             GetOrCreateLoadingOperation();
-            while (!loadingOperation.Value.IsDone)
-                yield return null;
 
-            CacheWindowPrefabFromLoadingOperation();
+            void OnLoadingComplete(AsyncOperationHandle<GameObject> asyncOperationHandle)
+            {
+                loadingOperation.Value.Completed -= OnLoadingComplete;
+                CacheWindowPrefabFromLoadingOperation();
+            }
+
+            loadingOperation.Value.Completed += OnLoadingComplete;
         }
 
         private void CacheWindowPrefabFromLoadingOperation()
@@ -56,22 +67,19 @@ namespace BrunoMikoski.UIManager
             cachedWindowPrefab = result.GetComponent<Window>();
         }
 
-        void IAsyncPrefabLoader.UnloadWindowPrefab()
+        void IAsyncPrefabLoader.UnloadPrefab()
         {
             windowInstance = null;
             cachedWindowPrefab = null;
+            if (loadingOperation.HasValue)
+                Addressables.Release(loadingOperation.Value);
             loadingOperation = null;
         }
 
-
-        // public IEnumerator LoadWindowPrefab()
-        // {
-        //     AsyncOperationHandle<GameObject> task = windowPrefabAssetRef.InstantiateAsync();
-        //     while (!task.IsDone)
-        //         yield return null;
-        //
-        //     cachedWindowPrefab = task.Result.GetComponent<Window>();
-        // }
+        public bool IsLoaded()
+        {
+            return cachedWindowPrefab != null;
+        }
     }
 }
 #endif

@@ -9,7 +9,10 @@ namespace BrunoMikoski.UIManager
         
         protected override void OnClick()
         {
-            WindowsManager.LoadGroup(targetGroupToLoad);
+            foreach (GroupID groupID in targetGroupToLoad)
+            {
+                WindowsManager.LoadGroup(groupID);
+            }
         }
     }
 }

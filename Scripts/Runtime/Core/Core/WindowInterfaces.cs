@@ -41,7 +41,8 @@ namespace BrunoMikoski.UIManager
 
     public interface IAsyncPrefabLoader
     {
-        IEnumerator LoadWindowPrefab();
-        void UnloadWindowPrefab();
+        void LoadPrefab();
+        void UnloadPrefab();
+        bool IsLoaded();
     }
 }

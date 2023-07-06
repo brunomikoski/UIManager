@@ -52,7 +52,7 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        private WindowsManager windowsManager;
+        protected WindowsManager windowsManager;
         public WindowsManager WindowsManager => windowsManager;
 
         private bool isOpen;
@@ -65,7 +65,7 @@ namespace BrunoMikoski.UIManager
         private Coroutine openRoutine;
         
 
-        public void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
+        internal void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
         {
             windowsManager = targetWindowsManager;
             windowID = targetWindowID;
@@ -78,7 +78,7 @@ namespace BrunoMikoski.UIManager
             if (isOpen)
                 return;
 
-            StopTransitionCoroutines();
+            StopTransitionsCoroutines();
             
             isOpen = true;
             openRoutine = windowsManager.StartCoroutine(OpenEnumerator(callback));
@@ -113,7 +113,7 @@ namespace BrunoMikoski.UIManager
             if (!isOpen)
                 return;
             
-            StopTransitionCoroutines();
+            StopTransitionsCoroutines();
             
             isOpen = false;
             closeRoutine = windowsManager.StartCoroutine(CloseEnumerator(callback));
@@ -165,7 +165,7 @@ namespace BrunoMikoski.UIManager
             DispatchOnLostFocus();
         }
 
-        private void StopTransitionCoroutines()
+        private void StopTransitionsCoroutines()
         {
             if (closeRoutine != null)
                 StopCoroutine(closeRoutine);
@@ -179,7 +179,7 @@ namespace BrunoMikoski.UIManager
         
         protected virtual void OnDestroy()
         {
-            StopTransitionCoroutines();
+            StopTransitionsCoroutines();
         }
     }
 }

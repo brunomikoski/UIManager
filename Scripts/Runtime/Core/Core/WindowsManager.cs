@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using BrunoMikoski.ScriptableObjectCollections;
@@ -130,7 +132,7 @@ namespace BrunoMikoski.UIManager
                 for (int j = 0; j < targetGroups.Length; j++)
                 {
                     GroupID targetGroupID = targetGroups[j];
-                    if (windowID.GroupID != targetGroupID)
+                    if (!windowID.Group.Contains(targetGroupID))
                         continue;
 
                     resultWindows.Add(windowID);
@@ -138,11 +140,6 @@ namespace BrunoMikoski.UIManager
             }
 
             return resultWindows;
-        }
-        
-        public void Open(Window window)
-        {
-            Open(window.WindowID);
         }
 
         public void Open(WindowID windowID)
@@ -389,14 +386,55 @@ namespace BrunoMikoski.UIManager
             layerToRectTransforms.Add(targetLayer, rectTransform);
         }
 
-        public void LoadGroup(params GroupID[] targetGroupToLoad)
+        public void LoadGroup(GroupID targetGroupToLoad, Action onLoadedCallback = null  )
+        {
+            StartCoroutine(LoadGroupEnumerator(targetGroupToLoad, onLoadedCallback));
+        }
+
+        public IEnumerator LoadGroupEnumerator(GroupID targetGroupToLoad, Action onLoadedCallback = null)
         {
             Initialize();
-            
+
             List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToLoad);
 
+            List<IAsyncPrefabLoader> prefabLoaders = new List<IAsyncPrefabLoader>(allWindows.Count);
+            for (int i = 0; i < allWindows.Count; i++)
+            {
+                WindowID windowID = allWindows[i];
+                if (windowID.HasWindowInstance)
+                    continue;
+
+                if (windowID is IAsyncPrefabLoader asyncPrefabLoader)
+                {
+                    if (asyncPrefabLoader.IsLoaded())
+                        continue;
+
+                    asyncPrefabLoader.LoadPrefab();
+                    prefabLoaders.Add(asyncPrefabLoader);
+                }
+            }
+
+            bool allPrefabsLoaded = false;
+            while (!allPrefabsLoaded)
+            {
+                allPrefabsLoaded = true;
+                for (int i = 0; i < prefabLoaders.Count; i++)
+                {
+                    IAsyncPrefabLoader prefabLoader = prefabLoaders[i];
+                    if (!prefabLoader.IsLoaded())
+                    {
+                        allPrefabsLoaded = false;
+                        break;
+                    }
+                }
+
+                yield return null;
+            }
+            
             for (int i = 0; i < allWindows.Count; i++)
                 CreateWindowInstanceForWindowID(allWindows[i]);
+            
+            onLoadedCallback?.Invoke();
         }
 
         public void UnloadGroup(params GroupID[] targetGroupToUnload)
@@ -404,7 +442,13 @@ namespace BrunoMikoski.UIManager
             Initialize();
             List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToUnload);
             for (int i = 0; i < allWindows.Count; i++)
-                DestroyWindowInstance(allWindows[i]);
+            {
+                WindowID windowID = allWindows[i];
+                DestroyWindowInstance(windowID);
+                
+                if (windowID is IAsyncPrefabLoader asyncPrefabLoader)
+                    asyncPrefabLoader.UnloadPrefab();
+            }
         }
 
         private void DestroyWindowInstance(WindowID windowID)
@@ -412,7 +456,7 @@ namespace BrunoMikoski.UIManager
             if (!windowID.HasWindowInstance)
                 return;
 
-            Destroy(windowID.WindowInstance);
+            Destroy(windowID.WindowInstance.gameObject);
         }
     }
 }

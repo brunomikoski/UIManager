@@ -27,7 +27,7 @@ namespace BrunoMikoski.UIManager
         private List<LayerID> availableLayers;
         private bool initialized;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             Initialize();
             LoadInitialWindows();
@@ -44,7 +44,7 @@ namespace BrunoMikoski.UIManager
 
             InitializeLayers();
             InitializeWindowIDs();
-            InitializeHierarchyWindows();
+            InitializeHierarchyWindows(transform);
             InitializeAutoLoadedGroups();
             
             initialized = true;
@@ -67,9 +67,9 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        private void InitializeHierarchyWindows()
+        protected void InitializeHierarchyWindows(Transform parent)
         {
-            Window[] hierarchyWindows = transform.GetComponentsInChildren<Window>(true);
+            Window[] hierarchyWindows = parent.GetComponentsInChildren<Window>(true);
             List<Window> toBeDestroyedWindow = new List<Window>();
             for (int i = 0; i < hierarchyWindows.Length; i++)
             {
@@ -77,6 +77,13 @@ namespace BrunoMikoski.UIManager
                 if (hierarchyWindow.WindowID == null)
                 {
                     Debug.LogError($"Window Instance {hierarchyWindow} doesn't have a WindowID assigned to it, will be destroyed");
+                    toBeDestroyedWindow.Add(hierarchyWindow);
+                    continue;
+                }
+
+                if (hierarchyWindow.WindowID.HasWindowInstance && hierarchyWindow.WindowID.WindowInstance != hierarchyWindow)
+                {
+                    Debug.LogError($"Window Instance {hierarchyWindow} has a WindowID assigned to it, but it already has a Window Instance assigned to it, will be destroyed");
                     toBeDestroyedWindow.Add(hierarchyWindow);
                     continue;
                 }
@@ -89,6 +96,7 @@ namespace BrunoMikoski.UIManager
                 Destroy(toBeDestroyedWindow[i].gameObject);
             }
         }
+
 
         private void InitializeLayers()
         {

@@ -322,6 +322,9 @@ namespace BrunoMikoski.UIManager
                 
                 if (windowID.LayerID != layerID)
                     continue;
+
+                if (!windowID.IsOpen())
+                    continue;
                 
                 resultWindows.Add(windowID.WindowInstance);
             }
@@ -484,6 +487,7 @@ namespace BrunoMikoski.UIManager
 
             Window targetInstance = windowID.WindowInstance;
             windowID.ClearWindowInstance();
+            instantiatedWindows.Remove(windowID);
             Destroy(targetInstance.gameObject);
         }
 

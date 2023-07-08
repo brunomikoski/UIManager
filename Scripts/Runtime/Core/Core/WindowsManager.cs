@@ -33,7 +33,7 @@ namespace BrunoMikoski.UIManager
             LoadInitialWindows();
         }
 
-        private void Initialize()
+        protected void Initialize()
         {
             if (initialized)
                 return;
@@ -67,7 +67,7 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        protected void InitializeHierarchyWindows(Transform parent)
+        public void InitializeHierarchyWindows(Transform parent)
         {
             Window[] hierarchyWindows = parent.GetComponentsInChildren<Window>(true);
             List<Window> toBeDestroyedWindow = new List<Window>();
@@ -83,9 +83,8 @@ namespace BrunoMikoski.UIManager
 
                 if (hierarchyWindow.WindowID.HasWindowInstance && hierarchyWindow.WindowID.WindowInstance != hierarchyWindow)
                 {
-                    Debug.LogError($"Window Instance {hierarchyWindow} has a WindowID assigned to it, but it already has a Window Instance assigned to it, will be destroyed");
-                    toBeDestroyedWindow.Add(hierarchyWindow);
-                    continue;
+                    UnloadWindow(hierarchyWindow.WindowID);
+                    Debug.LogError($"Window Instance {hierarchyWindow} has a WindowID assigned to it, but it already has a Window Instance assigned to it, destroying the previous one ");
                 }
 
                 InitializeWindowInstance(hierarchyWindow);
@@ -116,7 +115,7 @@ namespace BrunoMikoski.UIManager
                 availableWindows[i].Initialize(this);
         }
 
-        private void LoadInitialWindows()
+        protected void LoadInitialWindows()
         {
             for (int i = 0; i < initialWindows.Length; i++)
                 Open(initialWindows[i]);
@@ -451,12 +450,16 @@ namespace BrunoMikoski.UIManager
             List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToUnload);
             for (int i = 0; i < allWindows.Count; i++)
             {
-                WindowID windowID = allWindows[i];
-                DestroyWindowInstance(windowID);
-                
-                if (windowID is IAsyncPrefabLoader asyncPrefabLoader)
-                    asyncPrefabLoader.UnloadPrefab();
+                UnloadWindow(allWindows[i]);
             }
+        }
+
+        public void UnloadWindow(WindowID targetWindowID)
+        {
+            DestroyWindowInstance(targetWindowID);
+                
+            if (targetWindowID is IAsyncPrefabLoader asyncPrefabLoader)
+                asyncPrefabLoader.UnloadPrefab();
         }
 
         private void DestroyWindowInstance(WindowID windowID)

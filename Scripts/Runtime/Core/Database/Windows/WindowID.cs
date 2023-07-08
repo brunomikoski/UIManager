@@ -55,10 +55,17 @@ namespace BrunoMikoski.UIManager
         {
             windowInstance = targetWindowInstance;
         }
+        
+        public void ClearWindowInstance()
+        {
+            windowInstance = null;
+        }
+
 
         public virtual Window GetWindowPrefab()
         {
             return windowInstance;
         }
+
     }
 }

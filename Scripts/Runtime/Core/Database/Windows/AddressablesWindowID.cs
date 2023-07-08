@@ -69,7 +69,7 @@ namespace BrunoMikoski.UIManager
 
         void IAsyncPrefabLoader.UnloadPrefab()
         {
-            windowInstance = null;
+            ClearWindowInstance();
             cachedWindowPrefab = null;
             if (loadingOperation.HasValue)
                 Addressables.Release(loadingOperation.Value);

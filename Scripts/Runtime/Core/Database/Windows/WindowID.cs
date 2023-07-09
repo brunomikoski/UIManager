@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using BrunoMikoski.ScriptableObjectCollections;
 using BrunoMikoski.ScriptableObjectCollections.Picker;
 using UnityEngine;
@@ -44,6 +45,11 @@ namespace BrunoMikoski.UIManager
         public void Open()
         {
             windowsManager.Open(this);
+        }
+
+        public IEnumerator OpenEnumerator()
+        {
+            yield return windowsManager.OpenEnumerator(this);
         }
         
         public void Initialize(WindowsManager targetWindowsManager)

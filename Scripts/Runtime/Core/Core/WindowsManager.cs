@@ -155,37 +155,64 @@ namespace BrunoMikoski.UIManager
 
         public void Open(WindowID windowID)
         {
+            StartCoroutine(OpenEnumerator(windowID));
+        }
+
+        public IEnumerator OpenEnumerator(WindowID targetWindowID)
+        {
             Initialize();
-            if (!windowID.HasWindowInstance)
-                CreateWindowInstanceForWindowID(windowID);
+            
+            if (!targetWindowID.HasWindowInstance)
+                CreateWindowInstanceForWindowID(targetWindowID);
 
-            if (IsWindowOpen(windowID))
-                return;
+            if (IsWindowOpen(targetWindowID))
+                yield break;
 
-            DispatchWindowEvent(WindowEvent.OnWillOpen, windowID.WindowInstance);
+            DispatchWindowEvent(WindowEvent.OnWillOpen, targetWindowID.WindowInstance);
 
             List<Window> previouslyOpenWindow = GetAllOpenWindows();
-            LayerID windowLayer = windowID.LayerID;
+            LayerID windowLayer = targetWindowID.LayerID;
             if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
             {
                 if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> layerOpenWindows))
                 {
                     for (int i = 0; i < layerOpenWindows.Count; i++)
                     {
-                        Close(layerOpenWindows[i]);
+                        Close(layerOpenWindows[i].WindowID);
                     }
                 }
             }
             
-            windowID.WindowInstance.RectTransform.SetAsLastSibling();
+            if (targetWindowID.LayerID.IncludedOnHistory)
+                history.Add(targetWindowID);
+
+            targetWindowID.WindowInstance.RectTransform.SetAsLastSibling();
             UpdateFocusedWindow();
 
-            windowID.WindowInstance.Open(OnWindowInstanceOpened);
+            yield return targetWindowID.WindowInstance.OpenEnumerator();
+            OnWindowInstanceOpened(targetWindowID.WindowInstance);
+            DispatchTransition(previouslyOpenWindow, targetWindowID.WindowInstance);
+        }
+        
+        
+        public void Close(WindowID window)
+        {
+            StartCoroutine(CloseEnumerator(window));
+        }
 
-            if (windowID.LayerID.IncludedOnHistory)
-                history.Add(windowID);
+        public IEnumerator CloseEnumerator(WindowID targetWindowID)
+        {
+            Initialize();
             
-            DispatchTransition(previouslyOpenWindow, windowID.WindowInstance);
+            if (!IsWindowOpen(targetWindowID))
+                yield break;
+            
+            DispatchWindowEvent(WindowEvent.OnWillClose, targetWindowID.WindowInstance);
+            
+            yield return targetWindowID.WindowInstance.CloseEnumerator();
+            
+            DispatchWindowEvent(WindowEvent.OnClosed, targetWindowID.WindowInstance);
+            UpdateFocusedWindow();
         }
 
         private void OnWindowInstanceOpened(Window windowInstance)
@@ -251,28 +278,6 @@ namespace BrunoMikoski.UIManager
             Open(last);
         }
         
-        private void Close(Window window)
-        {
-            DispatchWindowEvent(WindowEvent.OnWillClose, window);
-            window.Close(OnWindowInstanceClosed);
-            UpdateFocusedWindow();
-        }
-
-        private void OnWindowInstanceClosed(Window window)
-        {
-            DispatchWindowEvent(WindowEvent.OnClosed, window);
-        }
-        
-        public void Close(WindowID windowID)
-        {
-            Initialize();
-            
-            if (!IsWindowOpen(windowID))
-                return;
-
-            Close(windowID.WindowInstance);
-        }
-
         private void UpdateFocusedWindow()
         {
             for (int i = 0; i < allKnowLayers.Count; i++)
@@ -291,6 +296,9 @@ namespace BrunoMikoski.UIManager
 
         private void SetFocusedWindow(Window targetWindow)
         {
+            if (targetWindow == focusedWindow)
+                return;
+            
             if (focusedWindow != null)
             {
                 focusedWindow.OnLostFocus();

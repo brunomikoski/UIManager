@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    [CustomEditor(typeof(Window))]
+    [CustomEditor(typeof(Window), true)]
     public class WindowCustomEditor : BaseEditor<Window>
     {
         private SerializedProperty windowIDProperty;

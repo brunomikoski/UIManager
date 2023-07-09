@@ -73,19 +73,16 @@ namespace BrunoMikoski.UIManager
             DispatchWindowInitialized();
         }
 
-        internal void Open(Action<Window> callback = null)
+        internal IEnumerator OpenEnumerator(Action<Window> callback = null)
         {
             if (isOpen)
-                return;
+                yield break;
 
-            StopTransitionsCoroutines();
-            
+            if (closeRoutine != null)
+                StopCoroutine(closeRoutine);
+
             isOpen = true;
-            openRoutine = windowsManager.StartCoroutine(OpenEnumerator(callback));
-        }
-        
-        private IEnumerator OpenEnumerator(Action<Window> callback)
-        {
+            
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
 
@@ -107,29 +104,24 @@ namespace BrunoMikoski.UIManager
         {
             DispatchOnAfterWindowOpen();
         }
-        
-        internal void Close(Action<Window> callback = null)
+
+        public IEnumerator CloseEnumerator()
         {
             if (!isOpen)
-                return;
-            
-            StopTransitionsCoroutines();
-            
-            isOpen = false;
-            closeRoutine = windowsManager.StartCoroutine(CloseEnumerator(callback));
-        }
+                yield break;
 
-        private IEnumerator CloseEnumerator(Action<Window> callback)
-        {
+            isOpen = false;
+            
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
             
             OnBeforeClose();
 
+            if (openRoutine != null)
+                StopCoroutine(openRoutine);
+
             yield return TransiteOutEnumerator();
 
-            GraphicRaycaster.enabled = true;
-            callback?.Invoke(this);
             OnAfterClose();
         }
 

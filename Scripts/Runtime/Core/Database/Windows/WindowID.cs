@@ -22,7 +22,63 @@ namespace BrunoMikoski.UIManager
         protected Window windowInstance;
         public Window WindowInstance => windowInstance;
 
-       private WindowsManager windowsManager;
+        protected WindowsManager windowsManager;
+       
+       
+       public event Action OnInitializedEvent
+       {
+           add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
+           remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
+       }
+       
+        public event Action OnWillOpenEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillOpen, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+        }  
+       
+        public event Action OnOpenedEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
+        }  
+        
+        public event Action OnWillCloseEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+        }
+        
+        public event Action OnClosedEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
+        }
+        
+        public event Action OnLostFocusEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
+        }
+        
+        public event Action OnGainFocusEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
+        }
+        
+        public event Action OnWillBeDestroyedEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
+        }
+        
+        public event Action OnDestroyedEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
+        }
+       
        
         public bool HasWindowInstance
         {
@@ -50,6 +106,16 @@ namespace BrunoMikoski.UIManager
         public IEnumerator OpenEnumerator()
         {
             yield return windowsManager.OpenEnumerator(this);
+        }
+        
+        public void Close()
+        {
+            windowsManager.Close(this);
+        }
+
+        public IEnumerator CloseEnumerator()
+        {
+            yield return windowsManager.CloseEnumerator(this);
         }
         
         public void Initialize(WindowsManager targetWindowsManager)

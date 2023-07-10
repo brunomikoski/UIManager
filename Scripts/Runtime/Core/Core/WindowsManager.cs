@@ -249,7 +249,7 @@ namespace BrunoMikoski.UIManager
             return resultOpenWindows;
         }
         
-        public void CloseLast()
+        public virtual void CloseLast()
         {
             Initialize();
             
@@ -261,7 +261,7 @@ namespace BrunoMikoski.UIManager
             Close(last);
         }
 
-        public void Back()
+        public virtual void Back()
         {
             Initialize();
             
@@ -442,7 +442,12 @@ namespace BrunoMikoski.UIManager
                     if (asyncPrefabLoader.IsLoaded())
                         continue;
 
-                    asyncPrefabLoader.LoadPrefab();
+                    DispatchWindowEvent(WindowEvent.OnWillBeLoaded, windowID);
+                    asyncPrefabLoader.LoadPrefab(() =>
+                    {
+                        DispatchWindowEvent(WindowEvent.OnLoaded, windowID);
+                    });
+                    
                     prefabLoaders.Add(asyncPrefabLoader);
                 }
             }
@@ -483,7 +488,7 @@ namespace BrunoMikoski.UIManager
         public void UnloadWindow(WindowID targetWindowID)
         {
             DestroyWindowInstance(targetWindowID);
-                
+
             if (targetWindowID is IAsyncPrefabLoader asyncPrefabLoader)
                 asyncPrefabLoader.UnloadPrefab();
         }
@@ -492,13 +497,14 @@ namespace BrunoMikoski.UIManager
         {
             if (!windowID.HasWindowInstance)
                 return;
+            
+            DispatchWindowEvent(WindowEvent.OnWillBeDestroyed, windowID);
 
             Window targetInstance = windowID.WindowInstance;
             windowID.ClearWindowInstance();
             instantiatedWindows.Remove(windowID);
             Destroy(targetInstance.gameObject);
+            DispatchWindowEvent(WindowEvent.OnDestroyed, windowID);
         }
-
-        
     }
 }

@@ -17,6 +17,13 @@ namespace BrunoMikoski.UIManager
 
         private AsyncOperationHandle<GameObject>? loadingOperation;
         
+         
+        public event Action OnWillBeLoadedEvent
+        {
+            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillBeLoaded, this, value);
+            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillBeLoaded, this, value);
+        }
+        
         
         public override Window GetWindowPrefab()
         {
@@ -45,20 +52,21 @@ namespace BrunoMikoski.UIManager
             loadingOperation = windowPrefabAssetRef.LoadAssetAsync<GameObject>();
         }
 
-        void IAsyncPrefabLoader.LoadPrefab()
+        void IAsyncPrefabLoader.LoadPrefab(Action callback)
         {
             if (cachedWindowPrefab != null)
                 return;
             
             GetOrCreateLoadingOperation();
 
-            void OnLoadingComplete(AsyncOperationHandle<GameObject> asyncOperationHandle)
+            void LoadingComplete(AsyncOperationHandle<GameObject> asyncOperationHandle)
             {
-                loadingOperation.Value.Completed -= OnLoadingComplete;
+                loadingOperation.Value.Completed -= LoadingComplete;
+                callback?.Invoke();
                 CacheWindowPrefabFromLoadingOperation();
             }
 
-            loadingOperation.Value.Completed += OnLoadingComplete;
+            loadingOperation.Value.Completed += LoadingComplete;
         }
 
         private void CacheWindowPrefabFromLoadingOperation()

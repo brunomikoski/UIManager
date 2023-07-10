@@ -105,7 +105,7 @@ namespace BrunoMikoski.UIManager
             DispatchOnAfterWindowOpen();
         }
 
-        public IEnumerator CloseEnumerator()
+        internal IEnumerator CloseEnumerator()
         {
             if (!isOpen)
                 yield break;
@@ -147,12 +147,12 @@ namespace BrunoMikoski.UIManager
             yield return null;
         }
 
-        public virtual void OnGainFocus()
+        internal virtual void OnGainFocus()
         {
             DispatchOnGainFocus();
         }
 
-        public void OnLostFocus()
+        internal virtual void OnLostFocus()
         {
             DispatchOnLostFocus();
         }

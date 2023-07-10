@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -40,7 +41,7 @@ namespace BrunoMikoski.UIManager
 
     public interface IAsyncPrefabLoader
     {
-        void LoadPrefab();
+        void LoadPrefab(Action loadedCallback = null);
         void UnloadPrefab();
         bool IsLoaded();
     }

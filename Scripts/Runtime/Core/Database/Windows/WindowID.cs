@@ -3,7 +3,6 @@ using System.Collections;
 using BrunoMikoski.ScriptableObjectCollections;
 using BrunoMikoski.ScriptableObjectCollections.Picker;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace BrunoMikoski.UIManager
 {
@@ -13,7 +12,6 @@ namespace BrunoMikoski.UIManager
         private LayerID layerID;
         public LayerID LayerID => layerID;
 
-        [FormerlySerializedAs("groupID")]
         [SerializeField]
         private CollectionItemPicker<GroupID> group;
         public CollectionItemPicker<GroupID> Group => group;
@@ -78,8 +76,7 @@ namespace BrunoMikoski.UIManager
             add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
             remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
         }
-       
-       
+
         public bool HasWindowInstance
         {
             get
@@ -133,11 +130,35 @@ namespace BrunoMikoski.UIManager
             windowInstance = null;
         }
 
-
         public virtual Window GetWindowPrefab()
         {
             return windowInstance;
         }
+        
+#if UNITY_EDITOR        
+        private void OnEnable()
+        {
+            if (layerID == null)
+            {
+                if (CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
+                {
+                    layerID = layerIDs[0];
+                    ObjectUtility.SetDirty(this);
+                }
+            }
 
+            if (group == null)
+                group = new CollectionItemPicker<GroupID>();
+            
+            if (group.Count == 0)
+            {
+                if (CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
+                {
+                    group.Add(groupIDs[0]);
+                    ObjectUtility.SetDirty(this);
+                }
+            }
+        }
+#endif
     }
 }

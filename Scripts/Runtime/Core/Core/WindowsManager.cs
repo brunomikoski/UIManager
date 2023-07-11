@@ -30,6 +30,7 @@ namespace BrunoMikoski.UIManager
         private Dictionary<WindowID, Window> instantiatedWindows = new();
 
         private bool initialized;
+        private bool isBackEnabled;
 
         protected virtual void Awake()
         {
@@ -264,6 +265,9 @@ namespace BrunoMikoski.UIManager
         public virtual void Back()
         {
             Initialize();
+
+            if (!isBackEnabled)
+                return;
             
             if (history.Count <= 1)
                 return;
@@ -276,6 +280,11 @@ namespace BrunoMikoski.UIManager
             
             history.RemoveAt(history.Count - 1);
             Open(last);
+        }
+
+        public void SetBackEnabled(bool isEnabled)
+        {
+            isBackEnabled = isEnabled;
         }
         
         private void UpdateFocusedWindow()

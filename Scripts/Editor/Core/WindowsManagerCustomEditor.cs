@@ -10,7 +10,7 @@ namespace BrunoMikoski.UIManager.CustomEditors
         {
             base.OnInspectorGUI();
 
-            DrawEditorSpawning();
+            // DrawEditorSpawning();
         }
 
         private void DrawEditorSpawning()

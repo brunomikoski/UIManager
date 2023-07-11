@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using BrunoMikoski.AnimationSequencer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,11 +15,9 @@ namespace BrunoMikoski.UIManager
         private bool disableInteractionWhileTransitioning = true;
 
         [SerializeField]
-        private AnimationSequencerController transitionIn;
-        
-        [SerializeField]
-        private AnimationSequencerController transitionOut;
-        
+        private WindowID windowID;
+        public WindowID WindowID => windowID;
+
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
         {
@@ -55,11 +52,8 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        private WindowsManager windowsManager;
+        protected WindowsManager windowsManager;
         public WindowsManager WindowsManager => windowsManager;
-
-        private WindowID windowID;
-        public WindowID WindowID => windowID;
 
         private bool isOpen;
         public bool IsOpen => isOpen;
@@ -71,7 +65,7 @@ namespace BrunoMikoski.UIManager
         private Coroutine openRoutine;
         
 
-        public void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
+        internal void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
         {
             windowsManager = targetWindowsManager;
             windowID = targetWindowID;
@@ -79,19 +73,16 @@ namespace BrunoMikoski.UIManager
             DispatchWindowInitialized();
         }
 
-        internal void Open(Action<Window> callback = null)
+        internal IEnumerator OpenEnumerator(Action<Window> callback = null)
         {
             if (isOpen)
-                return;
+                yield break;
 
-            StopTransitionCoroutines();
-            
+            if (closeRoutine != null)
+                StopCoroutine(closeRoutine);
+
             isOpen = true;
-            openRoutine = windowsManager.StartCoroutine(OpenEnumerator(callback));
-        }
-        
-        private IEnumerator OpenEnumerator(Action<Window> callback)
-        {
+            
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
 
@@ -113,29 +104,24 @@ namespace BrunoMikoski.UIManager
         {
             DispatchOnAfterWindowOpen();
         }
-        
-        internal void Close(Action<Window> callback = null)
+
+        internal IEnumerator CloseEnumerator()
         {
             if (!isOpen)
-                return;
-            
-            StopTransitionCoroutines();
-            
-            isOpen = false;
-            closeRoutine = windowsManager.StartCoroutine(CloseEnumerator(callback));
-        }
+                yield break;
 
-        private IEnumerator CloseEnumerator(Action<Window> callback)
-        {
+            isOpen = false;
+            
             if (disableInteractionWhileTransitioning)
                 GraphicRaycaster.enabled = false;
             
             OnBeforeClose();
 
+            if (openRoutine != null)
+                StopCoroutine(openRoutine);
+
             yield return TransiteOutEnumerator();
 
-            GraphicRaycaster.enabled = true;
-            callback?.Invoke(this);
             OnAfterClose();
         }
 
@@ -152,30 +138,26 @@ namespace BrunoMikoski.UIManager
         protected virtual IEnumerator TransiteInEnumerator()
         {
             gameObject.SetActive(true);
- 
-            if (transitionIn)
-                yield return transitionIn.PlayEnumerator();
+            yield return null;
         }
         
         protected virtual IEnumerator TransiteOutEnumerator()
         {
-            if (transitionOut)
-                yield return transitionOut.PlayEnumerator();
-            
             gameObject.SetActive(false);
+            yield return null;
         }
 
-        public virtual void OnGainFocus()
+        internal virtual void OnGainFocus()
         {
             DispatchOnGainFocus();
         }
 
-        public void OnLostFocus()
+        internal virtual void OnLostFocus()
         {
             DispatchOnLostFocus();
         }
 
-        private void StopTransitionCoroutines()
+        private void StopTransitionsCoroutines()
         {
             if (closeRoutine != null)
                 StopCoroutine(closeRoutine);
@@ -187,9 +169,9 @@ namespace BrunoMikoski.UIManager
             openRoutine = null;
         }
         
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
-            StopTransitionCoroutines();
+            StopTransitionsCoroutines();
         }
     }
 }

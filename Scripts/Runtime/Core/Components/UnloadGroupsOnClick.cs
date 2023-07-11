@@ -9,9 +9,7 @@ namespace BrunoMikoski.UIManager
 
         protected override void OnClick()
         {
-            WindowsManager.UnloadGroup(ids =>
-            {
-            }, targetGroupToUnload);
+            WindowsManager.UnloadGroup(targetGroupToUnload);
         }
     }
 }

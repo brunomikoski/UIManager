@@ -1,3 +1,4 @@
+using System.IO;
 using BrunoMikoski.ScriptableObjectCollections;
 using DG.Tweening;
 using UnityEditor;
@@ -48,29 +49,20 @@ namespace BrunoMikoski.UIManager
 
         private void PerformInitialSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs windowIDs))
-            {
-                windowIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<WindowIDs>(scriptableObjectFolder, true,
-                    "WindowIDs");
-            }
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs _))
+                ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<WindowIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Windows"), "WindowIDs");
             
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
-            {
-                layerIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<LayerIDs>(scriptableObjectFolder, true,
-                    "LayerIDs");
-            }
+                layerIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<LayerIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Layers"), "LayerIDs");
             
 
             layerIDs.GetOrAddNew("Main");
-            LayerID popup = layerIDs.GetOrAddNew("Popup");
-            popup.SetIncludedInHistory(false);
-            layerIDs.GetOrAddNew("Overlay");
+            layerIDs.GetOrAddNew("Popup").SetIncludedInHistory(false);
+            layerIDs.GetOrAddNew("Overlay").SetIncludedInHistory(false);
 
             if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
-            {
-                groupIDs = ScriptableObjectCollectionUtils.CreateScriptableObjectOfType<GroupIDs>(scriptableObjectFolder, true,
-                    "GroupIDs");
-            }
+                groupIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<GroupIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Groups"), "GroupIDs");
+            
             groupIDs.GetOrAddNew("Main");
 
             AssetDatabase.SaveAssets();

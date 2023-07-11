@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using BrunoMikoski.UIManager.Utility;
 using UnityEditor;
 
-namespace BrunoMikoski.UIManager.Animation
+namespace BrunoMikoski.UIManager
 {
     public abstract class BaseEditor<T> : Editor where T : class
     {

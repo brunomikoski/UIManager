@@ -20,9 +20,9 @@ namespace BrunoMikoski.UIManager
         }
 
 
-        private Dictionary<WindowEvent, List<Action<Window>>> windowEventToAnyWindowCallbackList = new Dictionary<WindowEvent,List<Action<Window>>>();
-        private Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>>();
-        private List<TransitionEventData> transationEvents = new List<TransitionEventData>();
+        private Dictionary<WindowEvent, List<Action<WindowID>>> windowEventToAnyWindowCallbackList = new();
+        private Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new();
+        private List<TransitionEventData> transationEvents = new();
         
         
         public void SubscribeToTransitionEvent(WindowID fromWindowID, WindowID toWindowID, Action callback)
@@ -41,10 +41,10 @@ namespace BrunoMikoski.UIManager
             transationEvents.Remove(result);
         }
         
-        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<Window> callback)
+        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
         {
             if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
-                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<Window>>());
+                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<WindowID>>());
 
             if (windowEventToAnyWindowCallbackList[targetEvent].Contains(callback))
                 return;
@@ -52,7 +52,7 @@ namespace BrunoMikoski.UIManager
             windowEventToAnyWindowCallbackList[targetEvent].Add(callback);
         }
         
-        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<Window> callback)
+        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
         {
             if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
                 return;
@@ -126,22 +126,30 @@ namespace BrunoMikoski.UIManager
 
         private void DispatchWindowEvent(WindowEvent targetEvent, Window window)
         {
-            if (windowToEventToCallbackList.ContainsKey(window.WindowID))
+            DispatchWindowEvent(targetEvent, window.WindowID);
+        }
+        
+        private void DispatchWindowEvent(WindowEvent targetEvent, WindowID windowID)
+        {
+            if (windowToEventToCallbackList.ContainsKey(windowID))
             {
-                if (windowToEventToCallbackList[window.WindowID].ContainsKey(targetEvent))
+                if (windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
                 {
-                    for (int i = 0; i < windowToEventToCallbackList[window.WindowID][targetEvent].Count; i++)
+                    for (int i = 0; i < windowToEventToCallbackList[windowID][targetEvent].Count; i++)
                     {
-                        windowToEventToCallbackList[window.WindowID][targetEvent][i].Invoke();
+                        windowToEventToCallbackList[windowID][targetEvent][i].Invoke();
                     }
                 }
             }
 
-            if (windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
+            if (windowID.HasWindowInstance)
             {
-                for (int i = 0; i < windowEventToAnyWindowCallbackList[targetEvent].Count; i++)
+                if (windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
                 {
-                    windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(window);
+                    for (int i = 0; i < windowEventToAnyWindowCallbackList[targetEvent].Count; i++)
+                    {
+                        windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(windowID);
+                    }
                 }
             }
         }
@@ -157,6 +165,9 @@ namespace BrunoMikoski.UIManager
         OnClosed,
         OnLostFocus,
         OnGainFocus,
-        OnWindowWillBeDestroyed
+        OnWillBeLoaded,
+        OnLoaded,
+        OnWillBeDestroyed,
+        OnDestroyed
     }
 }

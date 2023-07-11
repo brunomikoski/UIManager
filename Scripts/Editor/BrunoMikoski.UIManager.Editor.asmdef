@@ -1,10 +1,12 @@
 {
     "name": "BrunoMikoski.UIManager.Editor",
+    "rootNamespace": "",
     "references": [
         "BrunoMikoski.UIManager",
         "BrunoMikoski.ScriptableObjectCollection",
         "BrunoMikoski.ScriptableObjectCollection.Editor",
-        "st.rect-ex.Runtime"
+        "Unity.Addressables",
+        "Unity.Addressables.Editor"
     ],
     "includePlatforms": [
         "Editor"
@@ -15,6 +17,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "USE_ADDRESSABLES"
+        }
+    ],
     "noEngineReferences": false
 }

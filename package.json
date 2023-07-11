@@ -1,7 +1,7 @@
 {
   "name": "com.brunomikoski.uimanager",
   "displayName": "UI Manager",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "unity": "2018.4",
   "description": "UI Manager",
   "keywords": [
@@ -21,7 +21,7 @@
     "url": "https://www.brunomikoski.com"
   },
   "dependencies": {
-    "com.brunomikoski.scriptableobjectcollection": "1.6.3"
+    "com.brunomikoski.scriptableobjectcollection": "2.0.3"
   },
   "type": "library"
 }

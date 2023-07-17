@@ -16,7 +16,7 @@ namespace BrunoMikoski.UIManager
         private WindowID[] initialWindows;
 
 
-        private Dictionary<LayerID, RectTransform> layerToRectTransforms = new();
+        private Dictionary<LongGuid, RectTransform> layerToRectTransforms = new();
         
         private List<WindowID> history = new();
         
@@ -86,9 +86,9 @@ namespace BrunoMikoski.UIManager
                     continue;
                 }
 
-                if (hierarchyWindow.WindowID.HasWindowInstance && hierarchyWindow.WindowID.WindowInstance != hierarchyWindow)
+                if (hierarchyWindow.WindowID.Ref.HasWindowInstance && hierarchyWindow.WindowID.Ref.WindowInstance != hierarchyWindow)
                 {
-                    UnloadWindow(hierarchyWindow.WindowID);
+                    UnloadWindow(hierarchyWindow.WindowID.Ref);
                     Debug.LogError($"Window Instance {hierarchyWindow} has a WindowID assigned to it, but it already has a Window Instance assigned to it, destroying the previous one ");
                 }
 
@@ -107,10 +107,12 @@ namespace BrunoMikoski.UIManager
             for (int i = 0; i < allKnowLayers.Count; i++)
                 CreateLayer(allKnowLayers[i]);
 
-            foreach (var layerToRectTransform in layerToRectTransforms)
+            for (int i = 0; i < allKnowLayers.Count; i++)
             {
-                layerToRectTransform.Value.SetSiblingIndex(
-                    layerToRectTransform.Key.Collection.IndexOf(layerToRectTransform.Key));
+                LayerID layerID = allKnowLayers[i];
+
+                RectTransform parentRectTransform = GetParentForLayer(layerID);
+                parentRectTransform.SetSiblingIndex(layerID.Collection.IndexOf(layerID));
             }
         }
 
@@ -179,7 +181,7 @@ namespace BrunoMikoski.UIManager
                 {
                     for (int i = 0; i < layerOpenWindows.Count; i++)
                     {
-                        Close(layerOpenWindows[i].WindowID);
+                        Close(layerOpenWindows[i].WindowID.Ref);
                     }
                 }
             }
@@ -375,15 +377,12 @@ namespace BrunoMikoski.UIManager
         
         private void InitializeWindowInstance(Window windowInstance)
         {
-            WindowID windowID = windowInstance.WindowID;
+            WindowID windowID = windowInstance.WindowID.Ref;
             LayerID layerID = windowID.LayerID;
             if (layerID == null)
-            {
                 layerID = allKnowLayers[0];
-                Debug.LogWarning($"WindowID {windowID} doesn't have a LayerID assignedToID, using first one available {layerID}");
-            }
 
-            RectTransform parentLayer = GetParentForLayer(windowInstance.WindowID.LayerID);
+            RectTransform parentLayer = GetParentForLayer(layerID);
             if (windowInstance.RectTransform.parent != parentLayer)
                 windowInstance.RectTransform.SetParent(parentLayer, false);
             
@@ -396,16 +395,15 @@ namespace BrunoMikoski.UIManager
 
         private RectTransform GetParentForLayer(LayerID layerID)
         {
-            if (layerID == null)
-                return layerToRectTransforms[allKnowLayers[0]];
-            
-            return layerToRectTransforms[layerID];
+            LongGuid targetUID = layerID == null ? allKnowLayers[0].GUID : layerID.GUID;
+
+            return layerToRectTransforms[targetUID];
         }
 
-        private void CreateLayer(LayerID targetLayer)
+        private RectTransform CreateLayer(LayerID targetLayer)
         {
-            if (layerToRectTransforms.ContainsKey(targetLayer))
-                return;
+            if (layerToRectTransforms.TryGetValue(targetLayer.GUID, out RectTransform rectTransform))
+                return rectTransform;
 
             Transform layerTransform = transform.Find(targetLayer.name);
 
@@ -416,7 +414,7 @@ namespace BrunoMikoski.UIManager
                 layerTransform = layerGO.transform;
             }
             
-            RectTransform rectTransform = (RectTransform) layerTransform;
+            rectTransform = (RectTransform) layerTransform;
             rectTransform.anchorMax = new Vector2(1, 1);
             rectTransform.anchorMin = new Vector2(0, 0);
             rectTransform.sizeDelta = Vector2.zero;
@@ -425,7 +423,8 @@ namespace BrunoMikoski.UIManager
             rectTransform.anchoredPosition = Vector2.zero;
             rectTransform.name = targetLayer.name;
 
-            layerToRectTransforms.Add(targetLayer, rectTransform);
+            layerToRectTransforms.Add(targetLayer.GUID, rectTransform);
+            return rectTransform;
         }
 
         public void LoadGroup(GroupID targetGroupToLoad, Action onLoadedCallback = null  )

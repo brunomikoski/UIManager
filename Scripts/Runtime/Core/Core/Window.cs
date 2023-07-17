@@ -15,8 +15,9 @@ namespace BrunoMikoski.UIManager
         private bool disableInteractionWhileTransitioning = true;
 
         [SerializeField]
-        private WindowID windowID;
-        public WindowID WindowID => windowID;
+        private WindowIDIndirectReference windowID;
+        public WindowIDIndirectReference WindowID => windowID;
+        
 
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
@@ -68,7 +69,8 @@ namespace BrunoMikoski.UIManager
         internal void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
         {
             windowsManager = targetWindowsManager;
-            windowID = targetWindowID;
+            windowID = new WindowIDIndirectReference();
+            windowID.FromCollectionItem(targetWindowID);
             initialized = true;
             DispatchWindowInitialized();
         }

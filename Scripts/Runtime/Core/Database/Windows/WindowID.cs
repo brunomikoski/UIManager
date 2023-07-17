@@ -77,15 +77,7 @@ namespace BrunoMikoski.UIManager
             remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
         }
 
-        public bool HasWindowInstance
-        {
-            get
-            {
-                if (windowInstance == null)
-                    return false;
-                return windowInstance.Initialized;
-            }
-        }
+        public bool HasWindowInstance => windowInstance != null;
 
         public bool IsOpen()
         {

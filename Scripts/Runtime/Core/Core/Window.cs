@@ -16,39 +16,51 @@ namespace BrunoMikoski.UIManager
 
         [SerializeField]
         private WindowIDIndirectReference windowID;
-        public WindowIDIndirectReference WindowID => windowID;
-        
+        public WindowID WindowID => windowID.Ref;
 
+
+        private bool hasCachedRectTransform;
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
         {
             get
             {
-                if (cachedRectTransform == null)
-                    cachedRectTransform = GetComponent<RectTransform>();
+                if (!hasCachedRectTransform)
+                {
+                    cachedRectTransform = transform as RectTransform;
+                    hasCachedRectTransform = true;
+                }
                 return cachedRectTransform;
             }
         }
 
+        private bool hasCachedCanvasGroup;
         private CanvasGroup cachedCanvasGroup;
         public CanvasGroup CanvasGroup
         {
             get
             {
-                if (cachedCanvasGroup == null)
+                if (!hasCachedCanvasGroup)
+                {
                     cachedCanvasGroup = GetComponent<CanvasGroup>();
+                    hasCachedCanvasGroup = cachedCanvasGroup != null;
+                }
                 return cachedCanvasGroup;
             }
         }
 
         
+        private bool hasCachedGraphicRaycaster;
         private GraphicRaycaster cachedGraphicRaycaster;
         public GraphicRaycaster GraphicRaycaster
         {
             get
             {
-                if (cachedGraphicRaycaster == null)
-                    cachedGraphicRaycaster = this.GetOrAddComponent<GraphicRaycaster>();
+                if (!hasCachedGraphicRaycaster)
+                {
+                    cachedGraphicRaycaster = GetComponent<GraphicRaycaster>();
+                    hasCachedGraphicRaycaster = cachedGraphicRaycaster != null;
+                }
                 return cachedGraphicRaycaster;
             }
         }
@@ -69,8 +81,7 @@ namespace BrunoMikoski.UIManager
         internal void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
         {
             windowsManager = targetWindowsManager;
-            windowID = new WindowIDIndirectReference();
-            windowID.FromCollectionItem(targetWindowID);
+            windowID = new WindowIDIndirectReference(targetWindowID);
             initialized = true;
             DispatchWindowInitialized();
         }
@@ -84,15 +95,20 @@ namespace BrunoMikoski.UIManager
                 StopCoroutine(closeRoutine);
 
             isOpen = true;
-            
+
             if (disableInteractionWhileTransitioning)
-                GraphicRaycaster.enabled = false;
+            {
+                if (hasCachedGraphicRaycaster)
+                    GraphicRaycaster.enabled = false;
+            }
 
             OnBeforeOpen();
 
             yield return TransiteInEnumerator();
             
-            GraphicRaycaster.enabled = true;
+            if (hasCachedGraphicRaycaster)
+                GraphicRaycaster.enabled = true;
+            
             callback?.Invoke(this);
             OnAfterOpen();
         }
@@ -113,9 +129,12 @@ namespace BrunoMikoski.UIManager
                 yield break;
 
             isOpen = false;
-            
+
             if (disableInteractionWhileTransitioning)
-                GraphicRaycaster.enabled = false;
+            {
+                if (hasCachedGraphicRaycaster)
+                    GraphicRaycaster.enabled = false;
+            }
             
             OnBeforeClose();
 

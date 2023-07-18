@@ -7,5 +7,8 @@ namespace BrunoMikoski.UIManager
     [Serializable]
     public sealed class WindowIDIndirectReference : CollectionItemIndirectReference<WindowID>
     {
+        public WindowIDIndirectReference(WindowID item) : base(item)
+        {
+        }
     }
 }

@@ -97,8 +97,8 @@ namespace BrunoMikoski.UIManager
                 for (int j = 0; j < transationEvents.Count; j++)
                 {
                     TransitionEventData transition = transationEvents[j];
-                    if (transition.FromWindowID == fromWindow.WindowID.Ref
-                        && transition.ToWindowID == toWindow.WindowID.Ref)
+                    if (transition.FromWindowID == fromWindow.WindowID
+                        && transition.ToWindowID == toWindow.WindowID)
                     {
                         transition.Callback.Invoke();
                     }
@@ -126,7 +126,7 @@ namespace BrunoMikoski.UIManager
 
         private void DispatchWindowEvent(WindowEvent targetEvent, Window window)
         {
-            DispatchWindowEvent(targetEvent, window.WindowID.Ref);
+            DispatchWindowEvent(targetEvent, window.WindowID);
         }
         
         private void DispatchWindowEvent(WindowEvent targetEvent, WindowID windowID)

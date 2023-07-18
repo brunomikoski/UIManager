@@ -17,68 +17,72 @@ namespace BrunoMikoski.UIManager
         public CollectionItemPicker<GroupID> Group => group;
 
         [NonSerialized]
-        protected Window windowInstance;
+        private Window windowInstance;
         public Window WindowInstance => windowInstance;
 
-        protected WindowsManager windowsManager;
-       
-       
-       public event Action OnInitializedEvent
-       {
-           add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
-           remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
-       }
-       
+        public bool HasWindowInstance => windowInstance != null && windowInstance.Initialized;
+
+        protected WindowsManager WindowsManager;
+
+        public event Action OnInitializedEvent
+        {
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
+        }
+
         public event Action OnWillOpenEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillOpen, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
-        }  
-       
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillOpen, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+        }
+
         public event Action OnOpenedEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
-        }  
-        
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
+        }
+
         public event Action OnWillCloseEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
         }
-        
+
         public event Action OnClosedEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
         }
-        
+
         public event Action OnLostFocusEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
         }
-        
+
         public event Action OnGainFocusEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
         }
-        
+
         public event Action OnWillBeDestroyedEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
         }
-        
+
         public event Action OnDestroyedEvent
         {
-            add => windowsManager.SubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
-            remove => windowsManager.UnsubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
         }
 
-        public bool HasWindowInstance => windowInstance != null;
-
+        public void Initialize(WindowsManager targetWindowsManager)
+        {
+            WindowsManager = targetWindowsManager;
+        }
+        
         public bool IsOpen()
         {
             if (!HasWindowInstance)
@@ -89,27 +93,22 @@ namespace BrunoMikoski.UIManager
 
         public void Open()
         {
-            windowsManager.Open(this);
+            WindowsManager.Open(this);
         }
 
         public IEnumerator OpenEnumerator()
         {
-            yield return windowsManager.OpenEnumerator(this);
+            yield return WindowsManager.OpenEnumerator(this);
         }
         
         public void Close()
         {
-            windowsManager.Close(this);
+            WindowsManager.Close(this);
         }
 
         public IEnumerator CloseEnumerator()
         {
-            yield return windowsManager.CloseEnumerator(this);
-        }
-        
-        public void Initialize(WindowsManager targetWindowsManager)
-        {
-            windowsManager = targetWindowsManager;
+            yield return WindowsManager.CloseEnumerator(this);
         }
         
         public void SetWindowInstance(Window targetWindowInstance)

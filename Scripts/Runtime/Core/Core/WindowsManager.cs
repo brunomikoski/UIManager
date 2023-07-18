@@ -86,9 +86,9 @@ namespace BrunoMikoski.UIManager
                     continue;
                 }
 
-                if (hierarchyWindow.WindowID.Ref.HasWindowInstance && hierarchyWindow.WindowID.Ref.WindowInstance != hierarchyWindow)
+                if (hierarchyWindow.WindowID.HasWindowInstance && hierarchyWindow.WindowID.WindowInstance != hierarchyWindow)
                 {
-                    UnloadWindow(hierarchyWindow.WindowID.Ref);
+                    UnloadWindow(hierarchyWindow.WindowID);
                     Debug.LogError($"Window Instance {hierarchyWindow} has a WindowID assigned to it, but it already has a Window Instance assigned to it, destroying the previous one ");
                 }
 
@@ -181,7 +181,7 @@ namespace BrunoMikoski.UIManager
                 {
                     for (int i = 0; i < layerOpenWindows.Count; i++)
                     {
-                        Close(layerOpenWindows[i].WindowID.Ref);
+                        Close(layerOpenWindows[i].WindowID);
                     }
                 }
             }
@@ -377,7 +377,7 @@ namespace BrunoMikoski.UIManager
         
         private void InitializeWindowInstance(Window windowInstance)
         {
-            WindowID windowID = windowInstance.WindowID.Ref;
+            WindowID windowID = windowInstance.WindowID;
             LayerID layerID = windowID.LayerID;
             if (layerID == null)
                 layerID = allKnowLayers[0];

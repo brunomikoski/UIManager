@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(Canvas), typeof(CanvasGroup))]
     public partial class Window : MonoBehaviour
     {

@@ -1,6 +1,6 @@
 namespace BrunoMikoski.UIManager
 {
-    public class CloseParentOnClick : WindowButtonBase
+    public class CloseParentWindowOnClick : WindowButtonBase
     {
         protected override void OnClick()
         {

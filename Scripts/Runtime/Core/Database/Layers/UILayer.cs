@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class LayerID : ScriptableObjectCollectionItem
+    public class UILayer : ScriptableObjectCollectionItem
     {
         [SerializeField]
-        private LayerBehaviour behaviour = LayerBehaviour.Exclusive;
-        public LayerBehaviour Behaviour => behaviour;
+        private UILayerBehaviour behaviour = UILayerBehaviour.Exclusive;
+        public UILayerBehaviour Behaviour => behaviour;
 
         [SerializeField]
         private bool includedOnHistory = true;

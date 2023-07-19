@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Canvas), typeof(CanvasGroup))]
-    public partial class Window : MonoBehaviour
+    public partial class WindowController : MonoBehaviour
     {
         [SerializeField]
         private bool cacheInterfacesInstance = true;
@@ -16,8 +17,8 @@ namespace BrunoMikoski.UIManager
         private bool disableInteractionWhileTransitioning = true;
 
         [SerializeField]
-        private WindowIDIndirectReference windowID;
-        public WindowID WindowID => windowID.Ref;
+        private UIWindowIndirectReference windowIndirectRef;
+        public UIWindow UIWindow => windowIndirectRef.Ref;
 
 
         private bool hasCachedRectTransform;
@@ -79,15 +80,15 @@ namespace BrunoMikoski.UIManager
         private Coroutine openRoutine;
         
 
-        internal void Initialize(WindowsManager targetWindowsManager, WindowID targetWindowID)
+        internal void Initialize(WindowsManager targetWindowsManager, UIWindow targetUIWindow)
         {
             windowsManager = targetWindowsManager;
-            windowID = new WindowIDIndirectReference(targetWindowID);
+            windowIndirectRef = new UIWindowIndirectReference(targetUIWindow);
             initialized = true;
             DispatchWindowInitialized();
         }
 
-        internal IEnumerator OpenEnumerator(Action<Window> callback = null)
+        internal IEnumerator OpenEnumerator(Action<WindowController> callback = null)
         {
             if (isOpen)
                 yield break;

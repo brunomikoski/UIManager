@@ -1,6 +1,6 @@
 ﻿namespace BrunoMikoski.UIManager
 {
-    public enum LayerBehaviour
+    public enum UILayerBehaviour
     {
         Exclusive,
         Additive

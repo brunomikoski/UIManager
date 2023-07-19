@@ -49,19 +49,19 @@ namespace BrunoMikoski.UIManager
 
         private void PerformInitialSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out WindowIDs _))
-                ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<WindowIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Windows"), "WindowIDs");
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out UIWindowCollection _))
+                ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<UIWindowCollection>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Windows"), "UIWindowCollection");
             
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
-                layerIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<LayerIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Layers"), "LayerIDs");
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out UILayerCollection layerIDs))
+                layerIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<UILayerCollection>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Layers"), "UILayerCollection");
             
 
             layerIDs.GetOrAddNew("Main");
             layerIDs.GetOrAddNew("Popup").SetIncludedInHistory(false);
             layerIDs.GetOrAddNew("Overlay").SetIncludedInHistory(false);
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
-                groupIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<GroupIDs>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Groups"), "GroupIDs");
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType(out UIGroupCollection groupIDs))
+                groupIDs = ScriptableObjectCollectionUtility.CreateScriptableObjectOfType<UIGroupCollection>(Path.Combine(AssetDatabase.GetAssetPath(scriptableObjectFolder), "Groups"), "UIGroupCollection");
             
             groupIDs.GetOrAddNew("Main");
 
@@ -77,13 +77,13 @@ namespace BrunoMikoski.UIManager
 
         public static bool NeedSetup()
         {
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<WindowIDs>(out _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<UIWindowCollection>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<LayerIDs>(out _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<UILayerCollection>(out _))
                 return true;
 
-            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<GroupIDs>(out _))
+            if (!CollectionsRegistry.Instance.TryGetCollectionOfType<UIGroupCollection>(out _))
                 return true;
            
             return false;

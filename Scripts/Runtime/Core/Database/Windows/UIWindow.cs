@@ -6,19 +6,19 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public  class WindowID : ScriptableObjectCollectionItem
+    public  class UIWindow : ScriptableObjectCollectionItem
     {
         [SerializeField]
-        private LayerID layerID;
-        public LayerID LayerID => layerID;
+        private UILayer layer;
+        public UILayer Layer => layer;
 
         [SerializeField]
-        private CollectionItemPicker<GroupID> group;
-        public CollectionItemPicker<GroupID> Group => group;
+        private CollectionItemPicker<UIGroup> group;
+        public CollectionItemPicker<UIGroup> Group => group;
 
         [NonSerialized]
-        private Window windowInstance;
-        public Window WindowInstance => windowInstance;
+        private WindowController windowInstance;
+        public WindowController WindowInstance => windowInstance;
 
         public bool HasWindowInstance => windowInstance != null && windowInstance.Initialized;
 
@@ -111,9 +111,9 @@ namespace BrunoMikoski.UIManager
             yield return WindowsManager.CloseEnumerator(this);
         }
         
-        public void SetWindowInstance(Window targetWindowInstance)
+        public void SetWindowInstance(WindowController targetWindowControllerInstance)
         {
-            windowInstance = targetWindowInstance;
+            windowInstance = targetWindowControllerInstance;
         }
         
         public void ClearWindowInstance()
@@ -121,7 +121,7 @@ namespace BrunoMikoski.UIManager
             windowInstance = null;
         }
 
-        public virtual Window GetWindowPrefab()
+        public virtual WindowController GetWindowPrefab()
         {
             return windowInstance;
         }
@@ -129,21 +129,21 @@ namespace BrunoMikoski.UIManager
 #if UNITY_EDITOR        
         private void OnEnable()
         {
-            if (layerID == null)
+            if (layer == null)
             {
-                if (CollectionsRegistry.Instance.TryGetCollectionOfType(out LayerIDs layerIDs))
+                if (CollectionsRegistry.Instance.TryGetCollectionOfType(out UILayerCollection layerIDs))
                 {
-                    layerID = layerIDs[0];
+                    layer = layerIDs[0];
                     ObjectUtility.SetDirty(this);
                 }
             }
 
             if (group == null)
-                group = new CollectionItemPicker<GroupID>();
+                group = new CollectionItemPicker<UIGroup>();
             
             if (group.Count == 0)
             {
-                if (CollectionsRegistry.Instance.TryGetCollectionOfType(out GroupIDs groupIDs))
+                if (CollectionsRegistry.Instance.TryGetCollectionOfType(out UIGroupCollection groupIDs))
                 {
                     group.Add(groupIDs[0]);
                     ObjectUtility.SetDirty(this);

@@ -6,14 +6,14 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace BrunoMikoski.UIManager
 {
-    public sealed class AddressablesWindowID : WindowID, IAsyncPrefabLoader
+    public sealed class AddressablesUIWindow : UIWindow, IAsyncPrefabLoader
     {
         [SerializeField] 
         private AssetReferenceGameObject windowPrefabAssetRef;
         public AssetReferenceGameObject WindowPrefabAssetRef => windowPrefabAssetRef;
 
         [NonSerialized]
-        private Window cachedWindowPrefab;
+        private WindowController cachedWindowControllerPrefab;
 
         private AsyncOperationHandle<GameObject>? loadingOperation;
         
@@ -25,9 +25,9 @@ namespace BrunoMikoski.UIManager
         }
         
         
-        public override Window GetWindowPrefab()
+        public override WindowController GetWindowPrefab()
         {
-            if (cachedWindowPrefab == null)
+            if (cachedWindowControllerPrefab == null)
             {
                 Debug.LogWarning(
                     $"{name} implements IAsyncPrefabLoader but it's not loaded yet, please make sure to load the group {Group} before trying to get the prefab");
@@ -35,7 +35,7 @@ namespace BrunoMikoski.UIManager
                 loadingOperation.Value.WaitForCompletion();
                 CacheWindowPrefabFromLoadingOperation();
             }
-            return cachedWindowPrefab;
+            return cachedWindowControllerPrefab;
         }
 
         private void GetOrCreateLoadingOperation()
@@ -54,7 +54,7 @@ namespace BrunoMikoski.UIManager
 
         void IAsyncPrefabLoader.LoadPrefab(Action callback)
         {
-            if (cachedWindowPrefab != null)
+            if (cachedWindowControllerPrefab != null)
                 return;
             
             GetOrCreateLoadingOperation();
@@ -72,13 +72,13 @@ namespace BrunoMikoski.UIManager
         private void CacheWindowPrefabFromLoadingOperation()
         {
             GameObject result = loadingOperation.Value.Result;
-            cachedWindowPrefab = result.GetComponent<Window>();
+            cachedWindowControllerPrefab = result.GetComponent<WindowController>();
         }
 
         void IAsyncPrefabLoader.UnloadPrefab()
         {
             ClearWindowInstance();
-            cachedWindowPrefab = null;
+            cachedWindowControllerPrefab = null;
             if (loadingOperation.HasValue)
                 Addressables.Release(loadingOperation.Value);
             loadingOperation = null;
@@ -86,7 +86,7 @@ namespace BrunoMikoski.UIManager
 
         public bool IsLoaded()
         {
-            return cachedWindowPrefab != null;
+            return cachedWindowControllerPrefab != null;
         }
     }
 }

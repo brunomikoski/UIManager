@@ -8,19 +8,19 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private Button button;
         
-        private Window cachedParentWindow;
+        private WindowController cachedParentWindowController;
 
-        protected Window ParentWindow
+        protected WindowController ParentWindowController
         {
             get
             {
-                if (cachedParentWindow == null)
-                    cachedParentWindow = GetComponentInParent<Window>();
-                return cachedParentWindow;
+                if (cachedParentWindowController == null)
+                    cachedParentWindowController = GetComponentInParent<WindowController>();
+                return cachedParentWindowController;
             }
         }
 
-        protected WindowsManager WindowsManager => ParentWindow.WindowsManager;
+        protected WindowsManager WindowsManager => ParentWindowController.WindowsManager;
 
         private void Reset()
         {

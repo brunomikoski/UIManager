@@ -7,44 +7,44 @@ namespace BrunoMikoski.UIManager
     {
         private struct TransitionEventData
         {
-            public WindowID FromWindowID;
-            public WindowID ToWindowID;
+            public UIWindow FromUIWindow;
+            public UIWindow ToUIWindow;
             public Action Callback;
 
-            public TransitionEventData(WindowID fromWindowID, WindowID toWindowID, Action callback)
+            public TransitionEventData(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback)
             {
-                FromWindowID = fromWindowID;
-                ToWindowID = toWindowID;
+                FromUIWindow = fromUIWindow;
+                ToUIWindow = toUIWindow;
                 Callback = callback;
             }
         }
 
 
-        private Dictionary<WindowEvent, List<Action<WindowID>>> windowEventToAnyWindowCallbackList = new();
-        private Dictionary<WindowID, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new();
+        private Dictionary<WindowEvent, List<Action<UIWindow>>> windowEventToAnyWindowCallbackList = new();
+        private Dictionary<UIWindow, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new();
         private List<TransitionEventData> transationEvents = new();
         
         
-        public void SubscribeToTransitionEvent(WindowID fromWindowID, WindowID toWindowID, Action callback)
+        public void SubscribeToTransitionEvent(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback)
         {
-            if (TryGetTransitionEventData(fromWindowID, toWindowID, callback, out _))
+            if (TryGetTransitionEventData(fromUIWindow, toUIWindow, callback, out _))
                 return;
             
-            transationEvents.Add(new TransitionEventData(fromWindowID, toWindowID, callback));
+            transationEvents.Add(new TransitionEventData(fromUIWindow, toUIWindow, callback));
         }
         
-        public void UnsubscribeToTransitionEvent(WindowID fromWindowID, WindowID toWindowID, Action callback)
+        public void UnsubscribeToTransitionEvent(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback)
         {
-            if (!TryGetTransitionEventData(fromWindowID, toWindowID, callback, out TransitionEventData result))
+            if (!TryGetTransitionEventData(fromUIWindow, toUIWindow, callback, out TransitionEventData result))
                 return;
 
             transationEvents.Remove(result);
         }
         
-        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
+        public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<UIWindow> callback)
         {
             if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
-                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<WindowID>>());
+                windowEventToAnyWindowCallbackList.Add(targetEvent, new List<Action<UIWindow>>());
 
             if (windowEventToAnyWindowCallbackList[targetEvent].Contains(callback))
                 return;
@@ -52,7 +52,7 @@ namespace BrunoMikoski.UIManager
             windowEventToAnyWindowCallbackList[targetEvent].Add(callback);
         }
         
-        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<WindowID> callback)
+        public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<UIWindow> callback)
         {
             if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
                 return;
@@ -63,42 +63,42 @@ namespace BrunoMikoski.UIManager
             windowEventToAnyWindowCallbackList[targetEvent].Remove(callback);
         }
         
-        public void UnsubscribeToWindowEvent(WindowEvent targetEvent, WindowID windowID, Action callback)
+        public void UnsubscribeToWindowEvent(WindowEvent targetEvent, UIWindow uiWindow, Action callback)
         {
-            if (!windowToEventToCallbackList.ContainsKey(windowID))
+            if (!windowToEventToCallbackList.ContainsKey(uiWindow))
                 return;
 
-            if (!windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
+            if (!windowToEventToCallbackList[uiWindow].ContainsKey(targetEvent))
                 return;
 
-            windowToEventToCallbackList[windowID][targetEvent].Remove(callback);
+            windowToEventToCallbackList[uiWindow][targetEvent].Remove(callback);
         }
         
-        public void SubscribeToWindowEvent(WindowEvent targetEvent, WindowID windowID, Action callback)
+        public void SubscribeToWindowEvent(WindowEvent targetEvent, UIWindow uiWindow, Action callback)
         {
-            if (!windowToEventToCallbackList.ContainsKey(windowID))
-                windowToEventToCallbackList.Add(windowID, new Dictionary<WindowEvent, List<Action>>());
+            if (!windowToEventToCallbackList.ContainsKey(uiWindow))
+                windowToEventToCallbackList.Add(uiWindow, new Dictionary<WindowEvent, List<Action>>());
 
-            if (!windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
-                windowToEventToCallbackList[windowID].Add(targetEvent, new List<Action>());
+            if (!windowToEventToCallbackList[uiWindow].ContainsKey(targetEvent))
+                windowToEventToCallbackList[uiWindow].Add(targetEvent, new List<Action>());
 
-            if (windowToEventToCallbackList[windowID][targetEvent].Contains(callback))
+            if (windowToEventToCallbackList[uiWindow][targetEvent].Contains(callback))
                 return;
 
-            windowToEventToCallbackList[windowID][targetEvent].Add(callback);
+            windowToEventToCallbackList[uiWindow][targetEvent].Add(callback);
         }
         
          
-        private void DispatchTransition(List<Window> fromWindows, Window toWindow)
+        private void DispatchTransition(List<WindowController> fromWindows, WindowController toWindowController)
         {
             for (int i = 0; i < fromWindows.Count; i++)
             {
-                Window fromWindow = fromWindows[i];
+                WindowController fromWindowController = fromWindows[i];
                 for (int j = 0; j < transationEvents.Count; j++)
                 {
                     TransitionEventData transition = transationEvents[j];
-                    if (transition.FromWindowID == fromWindow.WindowID
-                        && transition.ToWindowID == toWindow.WindowID)
+                    if (transition.FromUIWindow == fromWindowController.UIWindow
+                        && transition.ToUIWindow == toWindowController.UIWindow)
                     {
                         transition.Callback.Invoke();
                     }
@@ -106,13 +106,13 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        private bool TryGetTransitionEventData(WindowID fromWindowID, WindowID toWindowID, Action callback, out TransitionEventData result)
+        private bool TryGetTransitionEventData(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback, out TransitionEventData result)
         {
             for (int i = 0; i < transationEvents.Count; i++)
             {
                 TransitionEventData transitionEventData = transationEvents[i];
-                if (transitionEventData.FromWindowID == fromWindowID
-                    && transitionEventData.ToWindowID == toWindowID
+                if (transitionEventData.FromUIWindow == fromUIWindow
+                    && transitionEventData.ToUIWindow == toUIWindow
                     && transitionEventData.Callback == callback)
                 {
                     result = transitionEventData;
@@ -124,31 +124,31 @@ namespace BrunoMikoski.UIManager
             return false;
         }
 
-        private void DispatchWindowEvent(WindowEvent targetEvent, Window window)
+        private void DispatchWindowEvent(WindowEvent targetEvent, WindowController windowController)
         {
-            DispatchWindowEvent(targetEvent, window.WindowID);
+            DispatchWindowEvent(targetEvent, windowController.UIWindow);
         }
         
-        private void DispatchWindowEvent(WindowEvent targetEvent, WindowID windowID)
+        private void DispatchWindowEvent(WindowEvent targetEvent, UIWindow uiWindow)
         {
-            if (windowToEventToCallbackList.ContainsKey(windowID))
+            if (windowToEventToCallbackList.ContainsKey(uiWindow))
             {
-                if (windowToEventToCallbackList[windowID].ContainsKey(targetEvent))
+                if (windowToEventToCallbackList[uiWindow].ContainsKey(targetEvent))
                 {
-                    for (int i = 0; i < windowToEventToCallbackList[windowID][targetEvent].Count; i++)
+                    for (int i = 0; i < windowToEventToCallbackList[uiWindow][targetEvent].Count; i++)
                     {
-                        windowToEventToCallbackList[windowID][targetEvent][i].Invoke();
+                        windowToEventToCallbackList[uiWindow][targetEvent][i].Invoke();
                     }
                 }
             }
 
-            if (windowID.HasWindowInstance)
+            if (uiWindow.HasWindowInstance)
             {
                 if (windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
                 {
                     for (int i = 0; i < windowEventToAnyWindowCallbackList[targetEvent].Count; i++)
                     {
-                        windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(windowID);
+                        windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(uiWindow);
                     }
                 }
             }

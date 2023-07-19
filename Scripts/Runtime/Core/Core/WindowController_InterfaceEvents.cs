@@ -2,7 +2,7 @@
 
 namespace BrunoMikoski.UIManager
 {
-    public partial class Window
+    public partial class WindowController
     {
         private List<IOnWindowInitialized> onWindowInitializedListeners; 
         private List<IOnBeforeOpenWindow> onBeforeOpenWindowListeners; 

@@ -5,7 +5,7 @@ namespace BrunoMikoski.UIManager
     public sealed class OpenWindowOnClick : WindowButtonBase
     {
         [SerializeField] 
-        private WindowIDIndirectReference targetWindow;
+        private UIWindowIndirectReference targetWindow;
 
         protected override void OnClick()
         {

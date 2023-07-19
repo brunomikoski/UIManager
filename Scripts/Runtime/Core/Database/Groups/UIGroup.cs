@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class GroupID : ScriptableObjectCollectionItem, ISOCColorizedItem
+    public class UIGroup : ScriptableObjectCollectionItem, ISOCColorizedItem
     {
         [SerializeField]
         private bool autoLoaded = true;

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
@@ -13,21 +14,20 @@ namespace BrunoMikoski.UIManager
     public partial class WindowsManager : MonoBehaviour
     {
         [SerializeField]
-        private WindowID[] initialWindows;
-
+        private UIWindow[] initialWindows;
 
         private Dictionary<LongGuid, RectTransform> layerToRectTransforms = new();
         
-        private List<WindowID> history = new();
+        private List<UIWindow> history = new();
         
-        private Window focusedWindow;
+        private WindowController focusedWindowController;
         
-        private List<WindowID> allKnowWindows;
-        private List<GroupID> allKnowGroups;
-        private List<LayerID> allKnowLayers;
+        private List<UIWindow> allKnowWindows;
+        private List<UIGroup> allKnowGroups;
+        private List<UILayer> allKnowLayers;
 
         
-        private Dictionary<WindowID, Window> instantiatedWindows = new();
+        private Dictionary<UIWindow, WindowController> instantiatedWindows = new();
 
         private bool initialized;
         private bool isBackEnabled;
@@ -43,9 +43,9 @@ namespace BrunoMikoski.UIManager
             if (initialized)
                 return;
 
-            allKnowWindows = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<WindowID>();
-            allKnowGroups = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<GroupID>();
-            allKnowLayers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<LayerID>();
+            allKnowWindows = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UIWindow>();
+            allKnowGroups = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UIGroup>();
+            allKnowLayers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UILayer>();
 
             InitializeLayers();
             InitializeWindowIDs();
@@ -59,40 +59,40 @@ namespace BrunoMikoski.UIManager
         {
             for (int i = 0; i < allKnowGroups.Count; i++)
             {
-                GroupID groupID = allKnowGroups[i];
-                if (!groupID.AutoLoaded) 
+                UIGroup uiGroup = allKnowGroups[i];
+                if (!uiGroup.AutoLoaded) 
                     continue;
                 
-                List<WindowID> autoLoadedWindows = GetAllWindowsFromGroups(groupID);
+                List<UIWindow> autoLoadedWindows = GetAllWindowsFromGroups(uiGroup);
                 for (int j = 0; j < autoLoadedWindows.Count; j++)
                 {
-                    WindowID autoLoadedWindow = autoLoadedWindows[j];
-                    InstantiateWindow(autoLoadedWindow);
+                    UIWindow autoLoadedUIWindow = autoLoadedWindows[j];
+                    InstantiateWindow(autoLoadedUIWindow);
                 }
             }
         }
 
         public void InitializeHierarchyWindows(Transform parent)
         {
-            Window[] hierarchyWindows = parent.GetComponentsInChildren<Window>(true);
-            List<Window> toBeDestroyedWindow = new List<Window>();
+            WindowController[] hierarchyWindows = parent.GetComponentsInChildren<WindowController>(true);
+            List<WindowController> toBeDestroyedWindow = new List<WindowController>();
             for (int i = 0; i < hierarchyWindows.Length; i++)
             {
-                Window hierarchyWindow = hierarchyWindows[i];
-                if (hierarchyWindow.WindowID == null)
+                WindowController hierarchyWindowController = hierarchyWindows[i];
+                if (hierarchyWindowController.UIWindow == null)
                 {
-                    Debug.LogError($"Window Instance {hierarchyWindow} doesn't have a WindowID assigned to it, will be destroyed");
-                    toBeDestroyedWindow.Add(hierarchyWindow);
+                    Debug.LogError($"WindowController Instance {hierarchyWindowController} doesn't have a UIWindow assigned to it, will be destroyed");
+                    toBeDestroyedWindow.Add(hierarchyWindowController);
                     continue;
                 }
 
-                if (hierarchyWindow.WindowID.HasWindowInstance && hierarchyWindow.WindowID.WindowInstance != hierarchyWindow)
+                if (hierarchyWindowController.UIWindow.HasWindowInstance && hierarchyWindowController.UIWindow.WindowInstance != hierarchyWindowController)
                 {
-                    UnloadWindow(hierarchyWindow.WindowID);
-                    Debug.LogError($"Window Instance {hierarchyWindow} has a WindowID assigned to it, but it already has a Window Instance assigned to it, destroying the previous one ");
+                    UnloadWindow(hierarchyWindowController.UIWindow);
+                    Debug.LogError($"WindowController Instance {hierarchyWindowController} has a UIWindow assigned to it, but it already has a WindowController Instance assigned to it, destroying the previous one ");
                 }
 
-                InitializeWindowInstance(hierarchyWindow);
+                InitializeWindowInstance(hierarchyWindowController);
             }
 
             for (int i = 0; i < toBeDestroyedWindow.Count; i++)
@@ -109,10 +109,10 @@ namespace BrunoMikoski.UIManager
 
             for (int i = 0; i < allKnowLayers.Count; i++)
             {
-                LayerID layerID = allKnowLayers[i];
+                UILayer uiLayer = allKnowLayers[i];
 
-                RectTransform parentRectTransform = GetParentForLayer(layerID);
-                parentRectTransform.SetSiblingIndex(layerID.Collection.IndexOf(layerID));
+                RectTransform parentRectTransform = GetParentForLayer(uiLayer);
+                parentRectTransform.SetSiblingIndex(uiLayer.Collection.IndexOf(uiLayer));
             }
         }
 
@@ -128,104 +128,104 @@ namespace BrunoMikoski.UIManager
                 Open(initialWindows[i]);
         }
 
-        private void InstantiateWindow(WindowID windowID)
+        private void InstantiateWindow(UIWindow uiWindow)
         {
-            if (windowID.HasWindowInstance)
+            if (uiWindow.HasWindowInstance)
                 return;
             
-            Window windowInstance = Instantiate(windowID.GetWindowPrefab());
-            InitializeWindowInstance(windowInstance);
+            WindowController windowControllerInstance = Instantiate(uiWindow.GetWindowPrefab());
+            InitializeWindowInstance(windowControllerInstance);
         }
 
-        private List<WindowID> GetAllWindowsFromGroups(params GroupID[] targetGroups)
+        private List<UIWindow> GetAllWindowsFromGroups(params UIGroup[] targetGroups)
         {
-            List<WindowID> resultWindows = new List<WindowID>();
+            List<UIWindow> resultWindows = new List<UIWindow>();
             for (int i = 0; i < allKnowWindows.Count; i++)
             {
-                WindowID windowID = allKnowWindows[i];
+                UIWindow uiWindow = allKnowWindows[i];
                 for (int j = 0; j < targetGroups.Length; j++)
                 {
-                    GroupID targetGroupID = targetGroups[j];
-                    if (!windowID.Group.Contains(targetGroupID))
+                    UIGroup targetUIGroup = targetGroups[j];
+                    if (!uiWindow.Group.Contains(targetUIGroup))
                         continue;
 
-                    resultWindows.Add(windowID);
+                    resultWindows.Add(uiWindow);
                 }
             }
 
             return resultWindows;
         }
 
-        public void Open(WindowID windowID)
+        public void Open(UIWindow uiWindow)
         {
-            StartCoroutine(OpenEnumerator(windowID));
+            StartCoroutine(OpenEnumerator(uiWindow));
         }
 
-        public IEnumerator OpenEnumerator(WindowID targetWindowID)
+        public IEnumerator OpenEnumerator(UIWindow targetUIWindow)
         {
             Initialize();
             
-            if (!targetWindowID.HasWindowInstance)
-                CreateWindowInstanceForWindowID(targetWindowID);
+            if (!targetUIWindow.HasWindowInstance)
+                CreateWindowInstanceForWindowID(targetUIWindow);
 
-            if (IsWindowOpen(targetWindowID))
+            if (IsWindowOpen(targetUIWindow))
                 yield break;
 
-            DispatchWindowEvent(WindowEvent.OnWillOpen, targetWindowID.WindowInstance);
+            DispatchWindowEvent(WindowEvent.OnWillOpen, targetUIWindow.WindowInstance);
 
-            List<Window> previouslyOpenWindow = GetAllOpenWindows();
-            LayerID windowLayer = targetWindowID.LayerID;
-            if (windowLayer.Behaviour == LayerBehaviour.Exclusive)
+            List<WindowController> previouslyOpenWindow = GetAllOpenWindows();
+            UILayer windowUILayer = targetUIWindow.Layer;
+            if (windowUILayer.Behaviour == UILayerBehaviour.Exclusive)
             {
-                if (TryGetOpenWindowsOfLayer(windowLayer, out List<Window> layerOpenWindows))
+                if (TryGetOpenWindowsOfLayer(windowUILayer, out List<WindowController> layerOpenWindows))
                 {
                     for (int i = 0; i < layerOpenWindows.Count; i++)
                     {
-                        Close(layerOpenWindows[i].WindowID);
+                        Close(layerOpenWindows[i].UIWindow);
                     }
                 }
             }
             
-            if (targetWindowID.LayerID.IncludedOnHistory)
-                history.Add(targetWindowID);
+            if (targetUIWindow.Layer.IncludedOnHistory)
+                history.Add(targetUIWindow);
 
-            targetWindowID.WindowInstance.RectTransform.SetAsLastSibling();
+            targetUIWindow.WindowInstance.RectTransform.SetAsLastSibling();
             UpdateFocusedWindow();
 
-            yield return targetWindowID.WindowInstance.OpenEnumerator();
-            OnWindowInstanceOpened(targetWindowID.WindowInstance);
-            DispatchTransition(previouslyOpenWindow, targetWindowID.WindowInstance);
+            yield return targetUIWindow.WindowInstance.OpenEnumerator();
+            OnWindowInstanceOpened(targetUIWindow.WindowInstance);
+            DispatchTransition(previouslyOpenWindow, targetUIWindow.WindowInstance);
         }
         
         
-        public void Close(WindowID window)
+        public void Close(UIWindow uiWindow)
         {
-            StartCoroutine(CloseEnumerator(window));
+            StartCoroutine(CloseEnumerator(uiWindow));
         }
 
-        public IEnumerator CloseEnumerator(WindowID targetWindowID)
+        public IEnumerator CloseEnumerator(UIWindow targetUIWindow)
         {
             Initialize();
             
-            if (!IsWindowOpen(targetWindowID))
+            if (!IsWindowOpen(targetUIWindow))
                 yield break;
             
-            DispatchWindowEvent(WindowEvent.OnWillClose, targetWindowID.WindowInstance);
+            DispatchWindowEvent(WindowEvent.OnWillClose, targetUIWindow.WindowInstance);
             
-            yield return targetWindowID.WindowInstance.CloseEnumerator();
+            yield return targetUIWindow.WindowInstance.CloseEnumerator();
             
-            DispatchWindowEvent(WindowEvent.OnClosed, targetWindowID.WindowInstance);
+            DispatchWindowEvent(WindowEvent.OnClosed, targetUIWindow.WindowInstance);
             UpdateFocusedWindow();
         }
 
-        private void OnWindowInstanceOpened(Window windowInstance)
+        private void OnWindowInstanceOpened(WindowController windowControllerInstance)
         {
-            DispatchWindowEvent(WindowEvent.OnOpened, windowInstance);
+            DispatchWindowEvent(WindowEvent.OnOpened, windowControllerInstance);
         }
         
-        public bool TryGetWindowInstance<T>(WindowID targetWindowID, out T resultTypedWindow) where T : Window
+        public bool TryGetWindowInstance<T>(UIWindow targetUIWindow, out T resultTypedWindow) where T : WindowController
         {
-            if (instantiatedWindows.TryGetValue(targetWindowID, out Window resultWindow))
+            if (instantiatedWindows.TryGetValue(targetUIWindow, out WindowController resultWindow))
             {
                 resultTypedWindow = resultWindow as T;
                 return resultTypedWindow != null;
@@ -235,18 +235,18 @@ namespace BrunoMikoski.UIManager
             return false;
         }
 
-        private List<Window> GetAllOpenWindows()
+        private List<WindowController> GetAllOpenWindows()
         {
-            List<Window> resultOpenWindows = new List<Window>();
+            List<WindowController> resultOpenWindows = new List<WindowController>();
             for (int i = 0; i < allKnowWindows.Count; i++)
             {
-                WindowID windowID = allKnowWindows[i];
+                UIWindow uiWindow = allKnowWindows[i];
                 
-                if (!windowID.HasWindowInstance)
+                if (!uiWindow.HasWindowInstance)
                     continue;
-                if (!windowID.WindowInstance.IsOpen)
+                if (!uiWindow.WindowInstance.IsOpen)
                     continue;
-                resultOpenWindows.Add(windowID.WindowInstance);
+                resultOpenWindows.Add(uiWindow.WindowInstance);
             }
 
             return resultOpenWindows;
@@ -259,7 +259,7 @@ namespace BrunoMikoski.UIManager
             if (history.Count == 0)
                 return;
 
-            WindowID last = history.Last();
+            UIWindow last = history.Last();
             history.RemoveAt(history.Count - 1);
             Close(last);
         }
@@ -276,7 +276,7 @@ namespace BrunoMikoski.UIManager
             
             CloseLast();
             
-            WindowID last = history.Last();
+            UIWindow last = history.Last();
             if (IsWindowOpen(last))
                 return;
             
@@ -293,8 +293,8 @@ namespace BrunoMikoski.UIManager
         {
             for (int i = 0; i < allKnowLayers.Count; i++)
             {
-                LayerID layerID = allKnowLayers[i];
-                if (TryGetOpenWindowsOfLayer(layerID, out List<Window> openWindows))
+                UILayer uiLayer = allKnowLayers[i];
+                if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> openWindows))
                 {
                     openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
                         .CompareTo(windowB.RectTransform.GetSiblingIndex()));
@@ -305,111 +305,113 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        private void SetFocusedWindow(Window targetWindow)
+        private void SetFocusedWindow(WindowController targetWindowController)
         {
-            if (targetWindow == focusedWindow)
+            if (targetWindowController == focusedWindowController)
                 return;
             
-            if (focusedWindow != null)
+            if (focusedWindowController != null)
             {
-                focusedWindow.OnLostFocus();
-                DispatchWindowEvent(WindowEvent.OnLostFocus, focusedWindow);
+                focusedWindowController.OnLostFocus();
+                DispatchWindowEvent(WindowEvent.OnLostFocus, focusedWindowController);
             }
 
-            focusedWindow = targetWindow;
-            focusedWindow.OnGainFocus();
-            DispatchWindowEvent(WindowEvent.OnGainFocus, focusedWindow);
+            focusedWindowController = targetWindowController;
+            focusedWindowController.OnGainFocus();
+            DispatchWindowEvent(WindowEvent.OnGainFocus, focusedWindowController);
         }
 
-        private bool IsWindowOpen(WindowID windowID)
+        private bool IsWindowOpen(UIWindow uiWindow)
         {
-            if (!windowID.WindowInstance)
+            if (!uiWindow.WindowInstance)
                 return false;
 
-            return windowID.WindowInstance.IsOpen;
+            return uiWindow.WindowInstance.IsOpen;
         }
 
-        private bool TryGetOpenWindowsOfLayer(LayerID layerID, out List<Window> resultWindows)
+        private bool TryGetOpenWindowsOfLayer(UILayer uiLayer, out List<WindowController> resultWindows)
         {
-            resultWindows = new List<Window>();
+            resultWindows = new List<WindowController>();
             for (int i = 0; i < allKnowWindows.Count; i++)
             {
-                WindowID windowID = allKnowWindows[i];
+                UIWindow uiWindow = allKnowWindows[i];
 
-                if (!windowID.HasWindowInstance)
+                if (!uiWindow.HasWindowInstance)
                     continue;
                 
-                if (windowID.LayerID != layerID)
+                if (uiWindow.Layer != uiLayer)
                     continue;
 
-                if (!windowID.IsOpen())
+                if (!uiWindow.IsOpen())
                     continue;
                 
-                resultWindows.Add(windowID.WindowInstance);
+                resultWindows.Add(uiWindow.WindowInstance);
             }
 
             return resultWindows.Count > 0;
         }
 
-        private bool TryGetFirstOpenWindowOfLayer(LayerID layerID, out Window resultWindow)
+        private bool TryGetFirstOpenWindowOfLayer(UILayer uiLayer, out WindowController resultWindowController)
         {
-            if (TryGetOpenWindowsOfLayer(layerID, out List<Window> windows))
+            if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> windows))
             {
-                resultWindow = windows[0];
+                resultWindowController = windows[0];
                 return true;
             }
 
-            resultWindow = null;
+            resultWindowController = null;
             return false;
         }
 
-        private void CreateWindowInstanceForWindowID(WindowID targetWindowID)
+        private void CreateWindowInstanceForWindowID(UIWindow targetUIWindow)
         {
-            Window windowPrefab = targetWindowID.GetWindowPrefab();
-            if (windowPrefab == null)
+            WindowController windowControllerPrefab = targetUIWindow.GetWindowPrefab();
+            if (windowControllerPrefab == null)
             {
-                Debug.LogError($"Missing Window Prefab for WindowID {targetWindowID}");
+                Debug.LogError($"Missing WindowController Prefab for UIWindow {targetUIWindow}");
                 return;
             }
-            Window windowInstance = Instantiate(windowPrefab, GetParentForLayer(targetWindowID.LayerID), false);
-            InitializeWindowInstance(windowInstance);
+            WindowController windowControllerInstance = Instantiate(windowControllerPrefab, GetParentForLayer(targetUIWindow.Layer), false);
+            InitializeWindowInstance(windowControllerInstance);
         }
         
-        private void InitializeWindowInstance(Window windowInstance)
+        private void InitializeWindowInstance(WindowController windowControllerInstance)
         {
-            WindowID windowID = windowInstance.WindowID;
-            LayerID layerID = windowID.LayerID;
-            if (layerID == null)
-                layerID = allKnowLayers[0];
-
-            RectTransform parentLayer = GetParentForLayer(layerID);
-            if (windowInstance.RectTransform.parent != parentLayer)
-                windowInstance.RectTransform.SetParent(parentLayer, false);
+            UIWindow uiWindow = windowControllerInstance.UIWindow;
+            Assert.IsNotNull(uiWindow);
             
-            windowInstance.gameObject.SetActive(false);
-            windowInstance.Initialize(this, windowID);
-            windowID.SetWindowInstance(windowInstance);
-            instantiatedWindows.Add(windowID, windowInstance);
-            DispatchWindowEvent(WindowEvent.OnWindowInitialized, windowID.WindowInstance);
+            UILayer uiLayer = uiWindow.Layer;
+            if (uiLayer == null)
+                uiLayer = allKnowLayers[0];
+
+            RectTransform parentLayer = GetParentForLayer(uiLayer);
+            if (windowControllerInstance.RectTransform.parent != parentLayer)
+                windowControllerInstance.RectTransform.SetParent(parentLayer, false);
+            
+            windowControllerInstance.gameObject.SetActive(false);
+            windowControllerInstance.Initialize(this, uiWindow);
+            uiWindow.SetWindowInstance(windowControllerInstance);
+            instantiatedWindows.Add(uiWindow, windowControllerInstance);
+            DispatchWindowEvent(WindowEvent.OnWindowInitialized, uiWindow.WindowInstance);
         }
 
-        private RectTransform GetParentForLayer(LayerID layerID)
+        private RectTransform GetParentForLayer(UILayer uiLayer)
         {
-            LongGuid targetUID = layerID == null ? allKnowLayers[0].GUID : layerID.GUID;
+            LongGuid targetUID = uiLayer == null ? allKnowLayers[0].GUID : uiLayer.GUID;
 
             return layerToRectTransforms[targetUID];
         }
 
-        private RectTransform CreateLayer(LayerID targetLayer)
+        private RectTransform CreateLayer(UILayer targetUILayer)
         {
-            if (layerToRectTransforms.TryGetValue(targetLayer.GUID, out RectTransform rectTransform))
+            if (layerToRectTransforms.TryGetValue(targetUILayer.GUID, out RectTransform rectTransform))
                 return rectTransform;
 
-            Transform layerTransform = transform.Find(targetLayer.name);
+            Transform layerTransform = transform.Find(targetUILayer.name);
 
             if (layerTransform == null)
             {
-                GameObject layerGO = new(targetLayer.name, typeof(RectTransform));
+                GameObject layerGO = new(targetUILayer.name, typeof(RectTransform));
                 layerGO.transform.SetParent(transform, false);
                 layerTransform = layerGO.transform;
             }
@@ -421,39 +423,39 @@ namespace BrunoMikoski.UIManager
             rectTransform.localScale = Vector3.one;
             rectTransform.localPosition = Vector3.zero;
             rectTransform.anchoredPosition = Vector2.zero;
-            rectTransform.name = targetLayer.name;
+            rectTransform.name = targetUILayer.name;
 
-            layerToRectTransforms.Add(targetLayer.GUID, rectTransform);
+            layerToRectTransforms.Add(targetUILayer.GUID, rectTransform);
             return rectTransform;
         }
 
-        public void LoadGroup(GroupID targetGroupToLoad, Action onLoadedCallback = null  )
+        public void LoadGroup(UIGroup targetUIGroupToLoad, Action onLoadedCallback = null  )
         {
-            StartCoroutine(LoadGroupEnumerator(targetGroupToLoad, onLoadedCallback));
+            StartCoroutine(LoadGroupEnumerator(targetUIGroupToLoad, onLoadedCallback));
         }
 
-        public IEnumerator LoadGroupEnumerator(GroupID targetGroupToLoad, Action onLoadedCallback = null)
+        public IEnumerator LoadGroupEnumerator(UIGroup targetUIGroupToLoad, Action onLoadedCallback = null)
         {
             Initialize();
 
-            List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToLoad);
+            List<UIWindow> allWindows = GetAllWindowsFromGroups(targetUIGroupToLoad);
 
             List<IAsyncPrefabLoader> prefabLoaders = new List<IAsyncPrefabLoader>(allWindows.Count);
             for (int i = 0; i < allWindows.Count; i++)
             {
-                WindowID windowID = allWindows[i];
-                if (windowID.HasWindowInstance)
+                UIWindow uiWindow = allWindows[i];
+                if (uiWindow.HasWindowInstance)
                     continue;
 
-                if (windowID is IAsyncPrefabLoader asyncPrefabLoader)
+                if (uiWindow is IAsyncPrefabLoader asyncPrefabLoader)
                 {
                     if (asyncPrefabLoader.IsLoaded())
                         continue;
 
-                    DispatchWindowEvent(WindowEvent.OnWillBeLoaded, windowID);
+                    DispatchWindowEvent(WindowEvent.OnWillBeLoaded, uiWindow);
                     asyncPrefabLoader.LoadPrefab(() =>
                     {
-                        DispatchWindowEvent(WindowEvent.OnLoaded, windowID);
+                        DispatchWindowEvent(WindowEvent.OnLoaded, uiWindow);
                     });
                     
                     prefabLoaders.Add(asyncPrefabLoader);
@@ -483,36 +485,36 @@ namespace BrunoMikoski.UIManager
             onLoadedCallback?.Invoke();
         }
 
-        public void UnloadGroup(params GroupID[] targetGroupToUnload)
+        public void UnloadGroup(params UIGroup[] targetGroupToUnload)
         {
             Initialize();
-            List<WindowID> allWindows = GetAllWindowsFromGroups(targetGroupToUnload);
+            List<UIWindow> allWindows = GetAllWindowsFromGroups(targetGroupToUnload);
             for (int i = 0; i < allWindows.Count; i++)
             {
                 UnloadWindow(allWindows[i]);
             }
         }
 
-        public void UnloadWindow(WindowID targetWindowID)
+        public void UnloadWindow(UIWindow targetUIWindow)
         {
-            DestroyWindowInstance(targetWindowID);
+            DestroyWindowInstance(targetUIWindow);
 
-            if (targetWindowID is IAsyncPrefabLoader asyncPrefabLoader)
+            if (targetUIWindow is IAsyncPrefabLoader asyncPrefabLoader)
                 asyncPrefabLoader.UnloadPrefab();
         }
 
-        private void DestroyWindowInstance(WindowID windowID)
+        private void DestroyWindowInstance(UIWindow uiWindow)
         {
-            if (!windowID.HasWindowInstance)
+            if (!uiWindow.HasWindowInstance)
                 return;
             
-            DispatchWindowEvent(WindowEvent.OnWillBeDestroyed, windowID);
+            DispatchWindowEvent(WindowEvent.OnWillBeDestroyed, uiWindow);
 
-            Window targetInstance = windowID.WindowInstance;
-            windowID.ClearWindowInstance();
-            instantiatedWindows.Remove(windowID);
+            WindowController targetInstance = uiWindow.WindowInstance;
+            uiWindow.ClearWindowInstance();
+            instantiatedWindows.Remove(uiWindow);
             Destroy(targetInstance.gameObject);
-            DispatchWindowEvent(WindowEvent.OnDestroyed, windowID);
+            DispatchWindowEvent(WindowEvent.OnDestroyed, uiWindow);
         }
     }
 }

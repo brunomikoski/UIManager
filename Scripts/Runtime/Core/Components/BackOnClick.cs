@@ -4,7 +4,7 @@
     {
         protected override void OnClick()
         {
-            ParentWindow.WindowsManager.Back();
+            ParentWindowController.WindowsManager.Back();
         }
     }
 }

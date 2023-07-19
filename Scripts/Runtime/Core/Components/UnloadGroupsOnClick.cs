@@ -5,7 +5,7 @@ namespace BrunoMikoski.UIManager
     public class UnloadGroupsOnClick : WindowButtonBase
     {
         [SerializeField]
-        private GroupID[] targetGroupToUnload;
+        private UIGroup[] targetGroupToUnload;
 
         protected override void OnClick()
         {

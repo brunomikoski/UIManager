@@ -5,9 +5,9 @@ using UnityEngine;
 namespace BrunoMikoski.UIManager
 {
     [Serializable]
-    public sealed class WindowIDIndirectReference : CollectionItemIndirectReference<WindowID>
+    public sealed class UIWindowIndirectReference : CollectionItemIndirectReference<UIWindow>
     {
-        public WindowIDIndirectReference(WindowID item) : base(item)
+        public UIWindowIndirectReference(UIWindow item) : base(item)
         {
         }
     }

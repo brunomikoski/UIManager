@@ -132,8 +132,12 @@ namespace BrunoMikoski.UIManager
         {
             if (uiWindow.HasWindowInstance)
                 return;
+
+            WindowController windowController = uiWindow.GetWindowPrefab();
+            if (windowController == null)
+                throw new NullReferenceException($"{uiWindow} is missing the prefab reference");
             
-            WindowController windowControllerInstance = Instantiate(uiWindow.GetWindowPrefab());
+            WindowController windowControllerInstance = Instantiate(windowController);
             InitializeWindowInstance(windowControllerInstance);
         }
 

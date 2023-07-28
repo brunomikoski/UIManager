@@ -81,7 +81,7 @@ namespace BrunoMikoski.UIManager
                 WindowController hierarchyWindowController = hierarchyWindows[i];
                 if (hierarchyWindowController.UIWindow == null)
                 {
-                    Debug.LogError($"WindowController Instance {hierarchyWindowController} doesn't have a UIWindow assigned to it, will be destroyed");
+                    Debug.LogWarning($"WindowController Instance {hierarchyWindowController} doesn't have a UIWindow assigned to it, will be destroyed");
                     toBeDestroyedWindow.Add(hierarchyWindowController);
                     continue;
                 }
@@ -89,7 +89,7 @@ namespace BrunoMikoski.UIManager
                 if (hierarchyWindowController.UIWindow.HasWindowInstance && hierarchyWindowController.UIWindow.WindowInstance != hierarchyWindowController)
                 {
                     UnloadWindow(hierarchyWindowController.UIWindow);
-                    Debug.LogError($"WindowController Instance {hierarchyWindowController} has a UIWindow assigned to it, but it already has a WindowController Instance assigned to it, destroying the previous one ");
+                    Debug.LogWarning($"WindowController Instance {hierarchyWindowController} has a UIWindow assigned to it, but it already has a WindowController Instance assigned to it, destroying the previous one ");
                 }
 
                 InitializeWindowInstance(hierarchyWindowController);

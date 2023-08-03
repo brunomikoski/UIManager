@@ -1,6 +1,3 @@
-using System.Collections;
-using UnityEngine;
-
 namespace BrunoMikoski.UIManager
 {
     public interface IOnWindowInitialized
@@ -8,14 +5,14 @@ namespace BrunoMikoski.UIManager
         void OnWindowInitialized();
     }
 
-    public interface IOnBeforeOpenWindow
+    public interface IOnBeforeWindowOpen
     {
-        void OnBeforeOpenWindow();
+        void OnBeforeWindowOpen();
     }
 
-    public interface IOnAfterWindowOpen
+    public interface IOnWindowOpened
     {
-        void OnAfterWindowOpen();
+        void OnWindowOpened();
     }
     
     public interface IOnBeforeWindowClose
@@ -23,18 +20,18 @@ namespace BrunoMikoski.UIManager
         void OnBeforeWindowClose();
     }
     
-    public interface IOnAfterWindowClose
+    public interface IOnWindowClosed
     {
-        void OnAfterWindowClose();
+        void OnWindowClosed();
     }
     
-    public interface IOnGainFocus
+    public interface IOnWindowGainedFocus
     {
-        void OnGainFocus();
+        void OnWindowGainedFocus();
     }
     
-    public interface IOnLostFocus
+    public interface IOnWindowLostFocus
     {
-        void OnLostFocus();
+        void OnWindowLostFocus();
     }
 }

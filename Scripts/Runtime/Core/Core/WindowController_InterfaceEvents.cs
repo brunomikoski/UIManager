@@ -5,12 +5,12 @@ namespace BrunoMikoski.UIManager
     public partial class WindowController
     {
         private List<IOnWindowInitialized> onWindowInitializedListeners; 
-        private List<IOnBeforeOpenWindow> onBeforeOpenWindowListeners; 
-        private List<IOnAfterWindowOpen> onAfterWindowOpenListeners; 
+        private List<IOnBeforeWindowOpen> onBeforeOpenWindowListeners; 
+        private List<IOnWindowOpened> onAfterWindowOpenListeners; 
         private List<IOnBeforeWindowClose> onBeforeWindowCloseListeners; 
-        private List<IOnAfterWindowClose> onAfterWindowCloseListeners; 
-        private List<IOnGainFocus> onGainFocusListeners; 
-        private List<IOnLostFocus> onLostFocusListeners;
+        private List<IOnWindowClosed> onAfterWindowCloseListeners; 
+        private List<IOnWindowGainedFocus> onGainFocusListeners; 
+        private List<IOnWindowLostFocus> onLostFocusListeners;
 
 
         private void UpdateListener<T>(ref List<T> targetType) where T : class
@@ -39,7 +39,7 @@ namespace BrunoMikoski.UIManager
             UpdateListener(ref onBeforeOpenWindowListeners);
 
             for (int i = 0; i < onBeforeOpenWindowListeners.Count; i++)
-                onBeforeOpenWindowListeners[i].OnBeforeOpenWindow();
+                onBeforeOpenWindowListeners[i].OnBeforeWindowOpen();
         }
         
         private void DispatchOnAfterWindowOpen()
@@ -47,7 +47,7 @@ namespace BrunoMikoski.UIManager
             UpdateListener(ref onAfterWindowOpenListeners);
 
             for (int i = 0; i < onAfterWindowOpenListeners.Count; i++)
-                onAfterWindowOpenListeners[i].OnAfterWindowOpen();
+                onAfterWindowOpenListeners[i].OnWindowOpened();
         }
         
         private void DispatchOnBeforeWindowClose()
@@ -63,7 +63,7 @@ namespace BrunoMikoski.UIManager
             UpdateListener(ref onAfterWindowCloseListeners);
 
             for (int i = 0; i < onAfterWindowCloseListeners.Count; i++)
-                onAfterWindowCloseListeners[i].OnAfterWindowClose();
+                onAfterWindowCloseListeners[i].OnWindowClosed();
         }
 
         private void DispatchOnGainFocus()
@@ -71,7 +71,7 @@ namespace BrunoMikoski.UIManager
             UpdateListener(ref onGainFocusListeners);
 
             for (int i = 0; i < onGainFocusListeners.Count; i++)
-                onGainFocusListeners[i].OnGainFocus();
+                onGainFocusListeners[i].OnWindowGainedFocus();
         }
 
         private void DispatchOnLostFocus()
@@ -79,7 +79,7 @@ namespace BrunoMikoski.UIManager
             UpdateListener(ref onLostFocusListeners);
 
             for (int i = 0; i < onLostFocusListeners.Count; i++)
-                onLostFocusListeners[i].OnLostFocus();
+                onLostFocusListeners[i].OnWindowLostFocus();
         }
     }
 }

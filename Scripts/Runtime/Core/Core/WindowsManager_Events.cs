@@ -158,16 +158,16 @@ namespace BrunoMikoski.UIManager
 
     public enum WindowEvent
     {
-        OnWindowInitialized,
-        OnWillOpen,
-        OnOpened,
-        OnWillClose,
-        OnClosed,
-        OnLostFocus,
-        OnGainFocus,
-        OnWillBeLoaded,
-        OnLoaded,
-        OnWillBeDestroyed,
-        OnDestroyed
+        WindowInitialized,
+        BeforeWindowOpen,
+        WindowOpened,
+        BeforeWindowClose,
+        WindowClosed,
+        WindowLostFocus,
+        WindowGainedFocus,
+        BeforeWindowLoad,
+        WindowLoaded,
+        BeforeWindowDestroy,
+        WindowDestroyed
     }
 }

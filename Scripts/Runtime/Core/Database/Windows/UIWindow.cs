@@ -26,56 +26,56 @@ namespace BrunoMikoski.UIManager
 
         public event Action OnInitializedEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWindowInitialized, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.WindowInitialized, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.WindowInitialized, this, value);
         }
 
         public event Action OnWillOpenEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillOpen, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.BeforeWindowOpen, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.BeforeWindowClose, this, value);
         }
 
         public event Action OnOpenedEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnOpened, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.WindowOpened, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.WindowOpened, this, value);
         }
 
         public event Action OnWillCloseEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillClose, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.BeforeWindowClose, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.BeforeWindowClose, this, value);
         }
 
         public event Action OnClosedEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnClosed, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.WindowClosed, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.WindowClosed, this, value);
         }
 
         public event Action OnLostFocusEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnLostFocus, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.WindowLostFocus, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.WindowLostFocus, this, value);
         }
 
         public event Action OnGainFocusEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnGainFocus, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.WindowGainedFocus, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.WindowGainedFocus, this, value);
         }
 
         public event Action OnWillBeDestroyedEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillBeDestroyed, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.BeforeWindowDestroy, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.BeforeWindowDestroy, this, value);
         }
 
         public event Action OnDestroyedEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnDestroyed, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.WindowDestroyed, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.WindowDestroyed, this, value);
         }
 
         public void Initialize(WindowsManager targetWindowsManager)

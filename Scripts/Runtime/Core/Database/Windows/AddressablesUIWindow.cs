@@ -20,8 +20,8 @@ namespace BrunoMikoski.UIManager
          
         public event Action OnWillBeLoadedEvent
         {
-            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.OnWillBeLoaded, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.OnWillBeLoaded, this, value);
+            add => WindowsManager.SubscribeToWindowEvent(WindowEvent.BeforeWindowLoad, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.BeforeWindowLoad, this, value);
         }
         
         

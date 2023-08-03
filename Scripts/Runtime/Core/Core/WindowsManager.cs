@@ -175,7 +175,7 @@ namespace BrunoMikoski.UIManager
             if (IsWindowOpen(targetUIWindow))
                 yield break;
 
-            DispatchWindowEvent(WindowEvent.OnWillOpen, targetUIWindow.WindowInstance);
+            DispatchWindowEvent(WindowEvent.BeforeWindowOpen, targetUIWindow.WindowInstance);
 
             List<WindowController> previouslyOpenWindow = GetAllOpenWindows();
             UILayer windowUILayer = targetUIWindow.Layer;
@@ -214,17 +214,17 @@ namespace BrunoMikoski.UIManager
             if (!IsWindowOpen(targetUIWindow))
                 yield break;
             
-            DispatchWindowEvent(WindowEvent.OnWillClose, targetUIWindow.WindowInstance);
+            DispatchWindowEvent(WindowEvent.BeforeWindowClose, targetUIWindow.WindowInstance);
             
             yield return targetUIWindow.WindowInstance.CloseEnumerator();
             
-            DispatchWindowEvent(WindowEvent.OnClosed, targetUIWindow.WindowInstance);
+            DispatchWindowEvent(WindowEvent.WindowClosed, targetUIWindow.WindowInstance);
             UpdateFocusedWindow();
         }
 
         private void OnWindowInstanceOpened(WindowController windowControllerInstance)
         {
-            DispatchWindowEvent(WindowEvent.OnOpened, windowControllerInstance);
+            DispatchWindowEvent(WindowEvent.WindowOpened, windowControllerInstance);
         }
         
         public bool TryGetWindowInstance<T>(UIWindow targetUIWindow, out T resultTypedWindow) where T : WindowController
@@ -317,12 +317,12 @@ namespace BrunoMikoski.UIManager
             if (focusedWindowController != null)
             {
                 focusedWindowController.OnLostFocus();
-                DispatchWindowEvent(WindowEvent.OnLostFocus, focusedWindowController);
+                DispatchWindowEvent(WindowEvent.WindowLostFocus, focusedWindowController);
             }
 
             focusedWindowController = targetWindowController;
             focusedWindowController.OnGainFocus();
-            DispatchWindowEvent(WindowEvent.OnGainFocus, focusedWindowController);
+            DispatchWindowEvent(WindowEvent.WindowGainedFocus, focusedWindowController);
         }
 
         private bool IsWindowOpen(UIWindow uiWindow)
@@ -396,7 +396,7 @@ namespace BrunoMikoski.UIManager
             windowControllerInstance.Initialize(this, uiWindow);
             uiWindow.SetWindowInstance(windowControllerInstance);
             instantiatedWindows.Add(uiWindow, windowControllerInstance);
-            DispatchWindowEvent(WindowEvent.OnWindowInitialized, uiWindow.WindowInstance);
+            DispatchWindowEvent(WindowEvent.WindowInitialized, uiWindow.WindowInstance);
         }
 
         private RectTransform GetParentForLayer(UILayer uiLayer)
@@ -456,10 +456,10 @@ namespace BrunoMikoski.UIManager
                     if (asyncPrefabLoader.IsLoaded())
                         continue;
 
-                    DispatchWindowEvent(WindowEvent.OnWillBeLoaded, uiWindow);
+                    DispatchWindowEvent(WindowEvent.BeforeWindowLoad, uiWindow);
                     asyncPrefabLoader.LoadPrefab(() =>
                     {
-                        DispatchWindowEvent(WindowEvent.OnLoaded, uiWindow);
+                        DispatchWindowEvent(WindowEvent.WindowLoaded, uiWindow);
                     });
                     
                     prefabLoaders.Add(asyncPrefabLoader);
@@ -512,13 +512,15 @@ namespace BrunoMikoski.UIManager
             if (!uiWindow.HasWindowInstance)
                 return;
             
-            DispatchWindowEvent(WindowEvent.OnWillBeDestroyed, uiWindow);
+            DispatchWindowEvent(WindowEvent.BeforeWindowClose, uiWindow);
+            DispatchWindowEvent(WindowEvent.WindowClosed, uiWindow);
+            DispatchWindowEvent(WindowEvent.BeforeWindowDestroy, uiWindow);
 
             WindowController targetInstance = uiWindow.WindowInstance;
             uiWindow.ClearWindowInstance();
             instantiatedWindows.Remove(uiWindow);
             Destroy(targetInstance.gameObject);
-            DispatchWindowEvent(WindowEvent.OnDestroyed, uiWindow);
+            DispatchWindowEvent(WindowEvent.WindowDestroyed, uiWindow);
         }
     }
 }

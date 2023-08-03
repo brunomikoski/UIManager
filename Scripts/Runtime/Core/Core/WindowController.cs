@@ -16,9 +16,10 @@ namespace BrunoMikoski.UIManager
         [SerializeField] 
         private bool disableInteractionWhileTransitioning = true;
 
+        [FormerlySerializedAs("windowIndirectRef")]
         [SerializeField]
-        private UIWindowIndirectReference windowIndirectRef;
-        public UIWindow UIWindow => windowIndirectRef.Ref;
+        private UIWindowIndirectReference window;
+        public UIWindow UIWindow => window.Ref;
 
 
         private bool hasCachedRectTransform;
@@ -83,7 +84,7 @@ namespace BrunoMikoski.UIManager
         internal void Initialize(WindowsManager targetWindowsManager, UIWindow targetUIWindow)
         {
             windowsManager = targetWindowsManager;
-            windowIndirectRef = new UIWindowIndirectReference(targetUIWindow);
+            window = new UIWindowIndirectReference(targetUIWindow);
             initialized = true;
             DispatchWindowInitialized();
         }
@@ -120,7 +121,7 @@ namespace BrunoMikoski.UIManager
             DispatchOnBeforeWindowOpen();
         }
         
-        private void OnAfterOpen()
+        protected virtual void OnAfterOpen()
         {
             DispatchOnAfterWindowOpen();
         }

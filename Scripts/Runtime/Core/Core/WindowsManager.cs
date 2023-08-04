@@ -482,9 +482,14 @@ namespace BrunoMikoski.UIManager
 
                 yield return null;
             }
-            
+
             for (int i = 0; i < allWindows.Count; i++)
+            {
+                if (allWindows[i].HasWindowInstance)
+                    continue;
+                
                 CreateWindowInstanceForWindowID(allWindows[i]);
+            }
             
             onLoadedCallback?.Invoke();
         }

@@ -215,10 +215,13 @@ namespace BrunoMikoski.UIManager
                 yield break;
             
             DispatchWindowEvent(WindowEvent.BeforeWindowClose, targetUIWindow.WindowInstance);
-            
+
             yield return targetUIWindow.WindowInstance.CloseEnumerator();
+
+            //This window might be destroyed at this point
+            if (targetUIWindow.WindowInstance != null)
+                DispatchWindowEvent(WindowEvent.WindowClosed, targetUIWindow.WindowInstance);
             
-            DispatchWindowEvent(WindowEvent.WindowClosed, targetUIWindow.WindowInstance);
             UpdateFocusedWindow();
         }
 

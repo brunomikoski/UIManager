@@ -75,7 +75,7 @@ namespace BrunoMikoski.UIManager
         public bool IsOpen => isOpen;
         
         private bool initialized;
-        public bool Initialized => initialized;
+        internal bool Initialized => initialized;
 
         private Coroutine closeRoutine;
         private Coroutine openRoutine;

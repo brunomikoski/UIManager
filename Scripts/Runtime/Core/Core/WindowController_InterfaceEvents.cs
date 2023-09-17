@@ -22,8 +22,9 @@ namespace BrunoMikoski.UIManager
                 targetType = new List<T>();
             else
                 targetType.Clear();
-            
-            gameObject.GetComponentsInChildren(true, targetType);
+
+            if (gameObject != null)
+                gameObject.GetComponentsInChildren(true, targetType);
         }
         
         private void DispatchWindowInitialized()

@@ -32,8 +32,11 @@ namespace BrunoMikoski.UIManager
         private bool initialized;
         private bool isBackEnabled;
 
+        private static bool IsQuitting;
+
         protected virtual void Awake()
         {
+            IsQuitting = false;
             Initialize();
             LoadInitialWindows();
         }
@@ -55,6 +58,11 @@ namespace BrunoMikoski.UIManager
             initialized = true;
         }
 
+        private void OnApplicationQuit()
+        {
+            IsQuitting = true;
+        }
+        
         private void InitializeAutoLoadedGroups()
         {
             for (int i = 0; i < allKnowGroups.Count; i++)
@@ -204,6 +212,9 @@ namespace BrunoMikoski.UIManager
         
         public void Close(UIWindow uiWindow)
         {
+            if (IsQuitting)
+                return;
+            
             StartCoroutine(CloseEnumerator(uiWindow));
         }
 

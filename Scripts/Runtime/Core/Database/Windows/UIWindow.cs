@@ -13,7 +13,7 @@ namespace BrunoMikoski.UIManager
         public UILayer Layer => layer;
 
         [SerializeField]
-        private CollectionItemPicker<UIGroup> group;
+        private CollectionItemPicker<UIGroup> group = new();
         public CollectionItemPicker<UIGroup> Group => group;
 
         [NonSerialized]

@@ -23,7 +23,7 @@ namespace BrunoMikoski.UIManager
             else
                 targetType.Clear();
 
-            if (gameObject != null)
+            if (this != null && gameObject != null)
                 gameObject.GetComponentsInChildren(true, targetType);
         }
         

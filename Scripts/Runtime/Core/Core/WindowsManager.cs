@@ -205,10 +205,12 @@ namespace BrunoMikoski.UIManager
             UpdateFocusedWindow();
 
             yield return targetUIWindow.WindowInstance.OpenEnumerator();
-            OnWindowInstanceOpened(targetUIWindow.WindowInstance);
-            DispatchTransition(previouslyOpenWindow, targetUIWindow.WindowInstance);
+            if (targetUIWindow.WindowInstance != null)
+            {
+                OnWindowInstanceOpened(targetUIWindow.WindowInstance);
+                DispatchTransition(previouslyOpenWindow, targetUIWindow.WindowInstance);
+            }
         }
-        
         
         public void Close(UIWindow uiWindow)
         {

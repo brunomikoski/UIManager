@@ -383,6 +383,37 @@ namespace BrunoMikoski.UIManager
             return false;
         }
 
+        protected bool TryGetHighestOpenExclusiveWindow(out WindowController windowController)
+        {
+            int biggestSiblingIndex = int.MinValue;
+            WindowController resultWindowController = null;
+            for (int i = 0; i < allKnowWindows.Count; i++)
+            {
+                UIWindow uiWindow = allKnowWindows[i];
+
+                if (!uiWindow.HasWindowInstance)
+                    continue;
+
+                if (uiWindow.Layer.Behaviour != UILayerBehaviour.Exclusive)
+                    continue;
+
+                if (!uiWindow.IsOpen())
+                    continue;
+
+                int siblingIndex = uiWindow.WindowInstance.RectTransform.GetSiblingIndex() +
+                                   uiWindow.WindowInstance.RectTransform.parent.GetSiblingIndex();
+
+                if (siblingIndex > biggestSiblingIndex)
+                {
+                    biggestSiblingIndex = siblingIndex;
+                    resultWindowController = uiWindow.WindowInstance;
+                }
+            }
+
+            windowController = resultWindowController;
+            return resultWindowController != null;
+        }
+
         private void CreateWindowInstanceForWindowID(UIWindow targetUIWindow)
         {
             WindowController windowControllerPrefab = targetUIWindow.GetWindowPrefab();

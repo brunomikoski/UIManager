@@ -1,9 +1,10 @@
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 
-namespace System.Threading.Tasks
+namespace BrunoMikoski.UIManager
 {
-    public static class TaskExtensions
+    internal static class TaskExtensions
     {
         public static IEnumerator AsCoroutine(this Task task)
         {

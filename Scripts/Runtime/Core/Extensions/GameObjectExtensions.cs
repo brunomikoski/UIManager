@@ -1,6 +1,8 @@
-﻿namespace UnityEngine
+﻿using UnityEngine;
+
+namespace BrunoMikoski.UIManager
 {
-    public static class GameObjectExtensions
+    internal static class GameObjectExtensions
     {
         public static T GetOrAddComponent<T>(this GameObject gameObject) where T: Component
         {

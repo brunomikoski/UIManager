@@ -1,9 +1,9 @@
 ﻿using System.Collections;
-using UnityEngine.Experimental.GlobalIllumination;
+using DG.Tweening;
 
-namespace DG.Tweening
+namespace BrunoMikoski.UIManager
 {
-    public static class DOTweenExtensions
+    internal static class DOTweenExtensions
     {
         public static IEnumerator WaitForTweenCompletionEnumerator(this object targetOrId)
         {

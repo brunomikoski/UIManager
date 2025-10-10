@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using BrunoMikoski.ScriptableObjectCollections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -532,6 +534,53 @@ namespace BrunoMikoski.UIManager
 
             for (int i = 0; i < allWindows.Count; i++)
             {
+                if (allWindows[i].HasWindowInstance)
+                    continue;
+                
+                CreateWindowInstanceForWindowID(allWindows[i]);
+            }
+            
+            onLoadedCallback?.Invoke();
+        }
+
+        public async UniTask LoadGroup_Async(UIGroup targetUIGroupToLoad, CancellationToken cancellationToken = default, Action onLoadedCallback = null)
+        {
+            Initialize();
+
+            List<UIWindow> allWindows = GetAllWindowsFromGroups(targetUIGroupToLoad);
+
+            List<UniTask> loadTasks = new List<UniTask>(allWindows.Count);
+            for (int i = 0; i < allWindows.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                UIWindow uiWindow = allWindows[i];
+                if (uiWindow.HasWindowInstance)
+                    continue;
+
+                if (uiWindow is IAsyncPrefabLoader asyncPrefabLoader)
+                {
+                    if (asyncPrefabLoader.IsLoaded())
+                        continue;
+
+                    DispatchWindowEvent(WindowEvent.BeforeWindowLoad, uiWindow);
+
+                    // Await the UniTask-based loader directly
+                    loadTasks.Add(asyncPrefabLoader.LoadPrefabAsync(cancellationToken, () =>
+                    {
+                        DispatchWindowEvent(WindowEvent.WindowLoaded, uiWindow);
+                    }));
+                }
+            }
+
+            // Wait for all prefabs to load
+            if (loadTasks.Count > 0)
+                await UniTask.WhenAll(loadTasks);
+
+            for (int i = 0; i < allWindows.Count; i++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (allWindows[i].HasWindowInstance)
                     continue;
                 

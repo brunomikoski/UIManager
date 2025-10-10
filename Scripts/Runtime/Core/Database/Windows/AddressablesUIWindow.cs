@@ -1,5 +1,7 @@
 #if USE_ADDRESSABLES
 using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -69,6 +71,31 @@ namespace BrunoMikoski.UIManager
             loadingOperation.Value.Completed += LoadingComplete;
         }
 
+        UniTask IAsyncPrefabLoader.LoadPrefabAsync(CancellationToken cancellationToken, Action callback)
+        {
+            if (cachedWindowControllerPrefab != null)
+            {
+                callback?.Invoke();
+                return UniTask.CompletedTask;
+            }
+
+            GetOrCreateLoadingOperation();
+            // Wait until Addressables operation completes; cannot cancel underlying load but we can stop awaiting.
+            return AwaitHandle(cancellationToken, callback);
+        }
+
+        private async UniTask AwaitHandle(CancellationToken cancellationToken, Action callback)
+        {
+            AsyncOperationHandle<GameObject> handle = loadingOperation.Value;
+            while (!handle.IsDone)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await UniTask.Yield(cancellationToken);
+            }
+            CacheWindowPrefabFromLoadingOperation();
+            callback?.Invoke();
+        }
+
         private void CacheWindowPrefabFromLoadingOperation()
         {
             GameObject result = loadingOperation.Value.Result;
@@ -82,6 +109,12 @@ namespace BrunoMikoski.UIManager
             if (loadingOperation.HasValue)
                 Addressables.Release(loadingOperation.Value);
             loadingOperation = null;
+        }
+
+        UniTask IAsyncPrefabLoader.UnloadPrefabAsync(CancellationToken cancellationToken)
+        {
+            ((IAsyncPrefabLoader)this).UnloadPrefab();
+            return UniTask.CompletedTask;
         }
 
         public bool IsLoaded()

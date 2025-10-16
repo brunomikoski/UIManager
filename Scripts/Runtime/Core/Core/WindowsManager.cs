@@ -290,10 +290,7 @@ namespace BrunoMikoski.UIManager
         {
             Initialize();
 
-            if (!isBackEnabled)
-                return;
-            
-            if (history.Count <= 1)
+            if (!CanGoBack())
                 return;
             
             CloseLast();
@@ -304,6 +301,19 @@ namespace BrunoMikoski.UIManager
             
             history.RemoveAt(history.Count - 1);
             Open(last);
+        }
+        
+        public bool CanGoBack()
+        {
+            Initialize();
+
+            if (!isBackEnabled)
+                return false;
+            
+            if (history.Count <= 1)
+                return false;
+            
+            return true;
         }
 
         public void SetBackEnabled(bool isEnabled)
@@ -444,7 +454,10 @@ namespace BrunoMikoski.UIManager
             windowControllerInstance.gameObject.SetActive(false);
             windowControllerInstance.Initialize(this, uiWindow);
             uiWindow.SetWindowInstance(windowControllerInstance);
-            instantiatedWindows.Add(uiWindow, windowControllerInstance);
+
+            if (!instantiatedWindows.TryAdd(uiWindow, windowControllerInstance))
+                throw new Exception("This UIWindow already has a WindowController Instance assigned to it");
+
             DispatchWindowEvent(WindowEvent.WindowInitialized, uiWindow.WindowInstance);
         }
 

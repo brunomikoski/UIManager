@@ -32,7 +32,7 @@ namespace BrunoMikoski.UIManager
         private Dictionary<UIWindow, WindowController> instantiatedWindows = new();
 
         private bool initialized;
-        private bool isBackEnabled;
+        private bool isBackEnabled = true;
 
         private static bool IsQuitting;
 

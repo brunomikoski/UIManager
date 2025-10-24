@@ -206,9 +206,9 @@ namespace BrunoMikoski.UIManager
                 history.Add(targetUIWindow);
 
             targetUIWindow.WindowInstance.RectTransform.SetAsLastSibling();
-            UpdateFocusedWindow();
 
             yield return targetUIWindow.WindowInstance.OpenEnumerator();
+            
             if (targetUIWindow.WindowInstance != null)
             {
                 OnWindowInstanceOpened(targetUIWindow.WindowInstance);
@@ -216,6 +216,8 @@ namespace BrunoMikoski.UIManager
                     OnLayerFirstWindowActivated(windowUILayer);
                 DispatchTransition(previouslyOpenWindow, targetUIWindow.WindowInstance);
             }
+            
+            UpdateFocusedWindow();
         }
         
         public void Close(UIWindow uiWindow)

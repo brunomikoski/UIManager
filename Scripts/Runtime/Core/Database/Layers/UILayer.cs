@@ -1,3 +1,4 @@
+using System;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
 
@@ -12,6 +13,25 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private bool includedOnHistory = true;
         public bool IncludedOnHistory => includedOnHistory;
+
+        protected WindowsManager WindowsManager;
+
+        public event Action OnLostFocusEvent
+        {
+            add => WindowsManager.SubscribeToLayerEvent(LayerEvent.LayerLostFocus, this, value);
+            remove => WindowsManager.UnsubscribeToLayerEvent(LayerEvent.LayerLostFocus, this, value);
+        }
+
+        public event Action OnGainFocusEvent
+        {
+            add => WindowsManager.SubscribeToLayerEvent(LayerEvent.LayerGainedFocus, this, value);
+            remove => WindowsManager.UnsubscribeToLayerEvent(LayerEvent.LayerGainedFocus, this, value);
+        }
+
+        public void Initialize(WindowsManager windowsManager)
+        {
+            WindowsManager = windowsManager;
+        }
 
         public void SetIncludedInHistory(bool shouldIncludeInHistory)
         {

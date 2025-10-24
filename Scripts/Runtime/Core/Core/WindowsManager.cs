@@ -115,7 +115,11 @@ namespace BrunoMikoski.UIManager
         private void InitializeLayers()
         {
             for (int i = 0; i < allKnowLayers.Count; i++)
-                CreateLayer(allKnowLayers[i]);
+            {
+                UILayer uiLayer = allKnowLayers[i];
+                uiLayer.Initialize(this);
+                CreateLayer(uiLayer);
+            }
 
             for (int i = 0; i < allKnowLayers.Count; i++)
             {
@@ -189,14 +193,12 @@ namespace BrunoMikoski.UIManager
 
             List<WindowController> previouslyOpenWindow = GetAllOpenWindows();
             UILayer windowUILayer = targetUIWindow.Layer;
-            if (windowUILayer.Behaviour == UILayerBehaviour.Exclusive)
+            bool layerWasEmpty = !TryGetOpenWindowsOfLayer(windowUILayer, out List<WindowController> layerOpenWindows);
+            if (!layerWasEmpty && windowUILayer.Behaviour == UILayerBehaviour.Exclusive)
             {
-                if (TryGetOpenWindowsOfLayer(windowUILayer, out List<WindowController> layerOpenWindows))
+                for (int i = 0; i < layerOpenWindows.Count; i++)
                 {
-                    for (int i = 0; i < layerOpenWindows.Count; i++)
-                    {
-                        Close(layerOpenWindows[i].UIWindow);
-                    }
+                    Close(layerOpenWindows[i].UIWindow);
                 }
             }
             
@@ -210,6 +212,8 @@ namespace BrunoMikoski.UIManager
             if (targetUIWindow.WindowInstance != null)
             {
                 OnWindowInstanceOpened(targetUIWindow.WindowInstance);
+                if (layerWasEmpty)
+                    OnLayerFirstWindowActivated(windowUILayer);
                 DispatchTransition(previouslyOpenWindow, targetUIWindow.WindowInstance);
             }
         }
@@ -237,13 +241,25 @@ namespace BrunoMikoski.UIManager
             if (targetUIWindow.WindowInstance != null)
                 DispatchWindowEvent(WindowEvent.WindowClosed, targetUIWindow.WindowInstance);
             
+            
+            bool layerIsNowEmpty = !TryGetOpenWindowsOfLayer(targetUIWindow.Layer, out List<WindowController> _);
+            if (layerIsNowEmpty)
+            {
+                OnLastWindowFromLayerClosed(targetUIWindow.Layer);
+            }
+            
+            
             UpdateFocusedWindow();
         }
+
 
         private void OnWindowInstanceOpened(WindowController windowControllerInstance)
         {
             DispatchWindowEvent(WindowEvent.WindowOpened, windowControllerInstance);
         }
+        
+        protected virtual void OnLastWindowFromLayerClosed(UILayer uiLayer) { }
+        protected virtual void OnLayerFirstWindowActivated(UILayer uiLayer) { }
         
         public bool TryGetWindowInstance<T>(UIWindow targetUIWindow, out T resultTypedWindow) where T : WindowController
         {
@@ -321,9 +337,9 @@ namespace BrunoMikoski.UIManager
             isBackEnabled = isEnabled;
         }
         
-        private void UpdateFocusedWindow()
+        public void UpdateFocusedWindow()
         {
-            for (int i = 0; i < allKnowLayers.Count; i++)
+            for (int i = allKnowLayers.Count - 1; i >= 0; i--)
             {
                 UILayer uiLayer = allKnowLayers[i];
                 if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> openWindows))
@@ -337,11 +353,19 @@ namespace BrunoMikoski.UIManager
             }
         }
 
+        
+        public void ClearCurrentFocusedWindow()
+        {
+            SetFocusedWindow(null);
+        }
+
         private void SetFocusedWindow(WindowController targetWindowController)
         {
             if (targetWindowController == focusedWindowController)
                 return;
             
+            UILayer previousLayer = focusedWindowController != null ? focusedWindowController.UIWindow.Layer : null;
+
             if (focusedWindowController != null)
             {
                 focusedWindowController.OnLostFocus();
@@ -349,8 +373,22 @@ namespace BrunoMikoski.UIManager
             }
 
             focusedWindowController = targetWindowController;
-            focusedWindowController.OnGainFocus();
-            DispatchWindowEvent(WindowEvent.WindowGainedFocus, focusedWindowController);
+            if (focusedWindowController != null)
+            {
+                focusedWindowController.OnGainFocus();
+                DispatchWindowEvent(WindowEvent.WindowGainedFocus, focusedWindowController);
+            }
+
+            UILayer newLayer = focusedWindowController != null ? focusedWindowController.UIWindow.Layer : null;
+            if (previousLayer != newLayer)
+            {
+                if (previousLayer != null)
+                    DispatchLayerEvent(LayerEvent.LayerLostFocus, previousLayer);
+                if (newLayer != null)
+                    DispatchLayerEvent(LayerEvent.LayerGainedFocus, newLayer);
+                
+                DispatchAnyLayerFocusChanged(previousLayer, newLayer);
+            }
         }
 
         private bool IsWindowOpen(UIWindow uiWindow)

@@ -23,7 +23,46 @@ namespace BrunoMikoski.UIManager
         private Dictionary<WindowEvent, List<Action<UIWindow>>> windowEventToAnyWindowCallbackList = new();
         private Dictionary<UIWindow, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new();
         private List<TransitionEventData> transationEvents = new();
+
+        private List<Action<UILayer, UILayer>> anyLayerFocusChangedCallbacks = new();
+        private Dictionary<UILayer, Dictionary<LayerEvent, List<Action>>> layerToEventToCallbackList = new();
         
+        public void SubscribeToAnyLayerFocusChangedEvent(Action<UILayer, UILayer> callback)
+        {
+            if (anyLayerFocusChangedCallbacks.Contains(callback))
+                return;
+            anyLayerFocusChangedCallbacks.Add(callback);
+        }
+        
+        public void UnsubscribeToAnyLayerFocusChangedEvent(Action<UILayer, UILayer> callback)
+        {
+            anyLayerFocusChangedCallbacks.Remove(callback);
+        }
+        
+        public void SubscribeToLayerEvent(LayerEvent targetEvent, UILayer layer, Action callback)
+        {
+            if (!layerToEventToCallbackList.ContainsKey(layer))
+                layerToEventToCallbackList.Add(layer, new Dictionary<LayerEvent, List<Action>>());
+
+            if (!layerToEventToCallbackList[layer].ContainsKey(targetEvent))
+                layerToEventToCallbackList[layer].Add(targetEvent, new List<Action>());
+
+            if (layerToEventToCallbackList[layer][targetEvent].Contains(callback))
+                return;
+
+            layerToEventToCallbackList[layer][targetEvent].Add(callback);
+        }
+        
+        public void UnsubscribeToLayerEvent(LayerEvent targetEvent, UILayer layer, Action callback)
+        {
+            if (!layerToEventToCallbackList.TryGetValue(layer, out Dictionary<LayerEvent, List<Action>> layerToActions))
+                return;
+
+            if (!layerToActions.ContainsKey(targetEvent))
+                return;
+
+            layerToEventToCallbackList[layer][targetEvent].Remove(callback);
+        }
         
         public void SubscribeToTransitionEvent(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback)
         {
@@ -54,10 +93,10 @@ namespace BrunoMikoski.UIManager
         
         public void UnsubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<UIWindow> callback)
         {
-            if (!windowEventToAnyWindowCallbackList.ContainsKey(targetEvent))
+            if (!windowEventToAnyWindowCallbackList.TryGetValue(targetEvent, out List<Action<UIWindow>> windowToActions))
                 return;
 
-            if (!windowEventToAnyWindowCallbackList[targetEvent].Contains(callback))
+            if (!windowToActions.Contains(callback))
                 return;
 
             windowEventToAnyWindowCallbackList[targetEvent].Remove(callback);
@@ -65,10 +104,10 @@ namespace BrunoMikoski.UIManager
         
         public void UnsubscribeToWindowEvent(WindowEvent targetEvent, UIWindow uiWindow, Action callback)
         {
-            if (!windowToEventToCallbackList.ContainsKey(uiWindow))
+            if (!windowToEventToCallbackList.TryGetValue(uiWindow, out Dictionary<WindowEvent, List<Action>> windowToActions))
                 return;
 
-            if (!windowToEventToCallbackList[uiWindow].ContainsKey(targetEvent))
+            if (!windowToActions.ContainsKey(targetEvent))
                 return;
 
             windowToEventToCallbackList[uiWindow][targetEvent].Remove(callback);
@@ -154,6 +193,27 @@ namespace BrunoMikoski.UIManager
             }
         }
 
+        private void DispatchLayerEvent(LayerEvent targetEvent, UILayer layer)
+        {
+            if (!layerToEventToCallbackList.TryGetValue(layer, out Dictionary<LayerEvent, List<Action>> eventToActions))
+                return;
+
+            if (!eventToActions.ContainsKey(targetEvent))
+                return;
+
+            List<Action> list = layerToEventToCallbackList[layer][targetEvent];
+            for (int i = 0; i < list.Count; i++)
+                list[i].Invoke();
+        }
+
+        private void DispatchAnyLayerFocusChanged(UILayer previousLayer, UILayer newLayer)
+        {
+            for (int i = 0; i < anyLayerFocusChangedCallbacks.Count; i++)
+            {
+                anyLayerFocusChangedCallbacks[i].Invoke(previousLayer, newLayer);
+            }
+        }
+
     }
 
     public enum WindowEvent
@@ -169,5 +229,11 @@ namespace BrunoMikoski.UIManager
         WindowLoaded,
         BeforeWindowDestroy,
         WindowDestroyed
+    }
+
+    public enum LayerEvent
+    {
+        LayerGainedFocus,
+        LayerLostFocus
     }
 }

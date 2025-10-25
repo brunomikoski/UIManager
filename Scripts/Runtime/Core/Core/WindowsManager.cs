@@ -23,6 +23,7 @@ namespace BrunoMikoski.UIManager
         private List<UIWindow> history = new();
         
         private WindowController focusedWindowController;
+        private HashSet<object> manuallyFocusedObjects = new();
         
         private List<UIWindow> allKnowWindows;
         private List<UIGroup> allKnowGroups;
@@ -35,6 +36,9 @@ namespace BrunoMikoski.UIManager
         private bool isBackEnabled = true;
 
         private static bool IsQuitting;
+
+        public WindowController FocusedWindowController => focusedWindowController;
+        public IReadOnlyCollection<object> ManuallyFocusedObjects => manuallyFocusedObjects;
 
         protected virtual void Awake()
         {
@@ -339,8 +343,14 @@ namespace BrunoMikoski.UIManager
             isBackEnabled = isEnabled;
         }
         
-        public void UpdateFocusedWindow()
+        private void UpdateFocusedWindow()
         {
+            if (manuallyFocusedObjects.Count > 0)
+            {
+                SetFocusedWindow(null);
+                return;
+            }
+            
             for (int i = allKnowLayers.Count - 1; i >= 0; i--)
             {
                 UILayer uiLayer = allKnowLayers[i];
@@ -356,9 +366,16 @@ namespace BrunoMikoski.UIManager
         }
 
         
-        public void ClearCurrentFocusedWindow()
+        public void AddManuallyFocusedObject(object focusedObject)
         {
-            SetFocusedWindow(null);
+            manuallyFocusedObjects.Add(focusedObject);
+            UpdateFocusedWindow();
+        }
+        
+        public void RemoveManuallyFocusedObject(object focusedObject)
+        {
+            manuallyFocusedObjects.Remove(focusedObject);
+            UpdateFocusedWindow();
         }
 
         private void SetFocusedWindow(WindowController targetWindowController)

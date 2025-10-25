@@ -58,6 +58,57 @@ namespace BrunoMikoski.UIManager.CustomEditors
                     }
                 }
             }
+
+            // Focus Debug section
+            using (new EditorGUILayout.VerticalScope("Box"))
+            {
+                EditorGUILayout.LabelField("Focus Debug", EditorStyles.boldLabel);
+
+                WindowsManager windowsManager = (WindowsManager)target;
+                if (!EditorApplication.isPlaying)
+                {
+                    EditorGUILayout.HelpBox("Enter Play Mode to view current focused window and manual focus overrides.", MessageType.Info);
+                }
+                else
+                {
+                    WindowController focused = windowsManager.FocusedWindowController;
+                    using (new EditorGUI.DisabledGroupScope(true))
+                    {
+                        Object focusedObj = focused != null ? (Object)focused : null;
+                        EditorGUILayout.ObjectField("Focused Window", focusedObj, typeof(WindowController), true);
+                    }
+
+                    IReadOnlyCollection<object> manual = windowsManager.ManuallyFocusedObjects;
+                    int manualCount = manual.Count;
+                    if (manualCount > 0)
+                    {
+                        EditorGUILayout.HelpBox("Focus is currently overridden by manually added object(s).", MessageType.Warning);
+                        EditorGUILayout.LabelField($"Manual Focused Objects ({manualCount})", EditorStyles.miniBoldLabel);
+
+                        int index = 0;
+                        foreach (object obj in manual)
+                        {
+                            if (obj is Object unityObj)
+                            {
+                                using (new EditorGUI.DisabledGroupScope(true))
+                                {
+                                    EditorGUILayout.ObjectField($"[{index}]", unityObj, typeof(Object), true);
+                                }
+                            }
+                            else
+                            {
+                                string label = obj != null ? $"{obj.GetType().Name}: {obj}" : "null";
+                                EditorGUILayout.LabelField($"[{index}]", label);
+                            }
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Manual Focused Objects", "None");
+                    }
+                }
+            }
         }
 
         private void OrganizeHierarchy()

@@ -19,6 +19,9 @@ namespace BrunoMikoski.UIManager
         [NonSerialized]
         private WindowController windowInstance;
         public WindowController WindowInstance => windowInstance;
+        
+        [field:SerializeField]
+        public bool CanReceiveFocus { get; private set; } = true;
 
         public bool HasWindowInstance => windowInstance != null && windowInstance.Initialized;
 

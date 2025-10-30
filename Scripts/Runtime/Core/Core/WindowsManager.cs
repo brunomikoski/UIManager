@@ -359,8 +359,15 @@ namespace BrunoMikoski.UIManager
                     openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
                         .CompareTo(windowB.RectTransform.GetSiblingIndex()));
 
-                    SetFocusedWindow(openWindows.Last());
-                    return;
+                    for (int j = openWindows.Count - 1; j >= 0; j--)
+                    {
+                        WindowController windowController = openWindows[j];
+                        if (!windowController.UIWindow.CanReceiveFocus)
+                            continue;
+                        
+                        SetFocusedWindow(windowController);
+                        return;
+                    }
                 }
             }
         }

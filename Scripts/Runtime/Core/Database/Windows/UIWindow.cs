@@ -129,6 +129,11 @@ namespace BrunoMikoski.UIManager
             return windowInstance;
         }
         
+        public bool IsFocused()
+        {
+            return WindowsManager.FocusedWindowController == windowInstance;
+        }
+        
 #if UNITY_EDITOR        
         private void OnEnable()
         {

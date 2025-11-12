@@ -77,9 +77,8 @@ namespace BrunoMikoski.UIManager
         private bool initialized;
         internal bool Initialized => initialized;
 
-        private Coroutine closeRoutine;
-        private Coroutine openRoutine;
-        
+        private Coroutine activeCoroutine;
+
 
         internal void Initialize(WindowsManager targetWindowsManager, UIWindow targetUIWindow)
         {
@@ -93,9 +92,6 @@ namespace BrunoMikoski.UIManager
         {
             if (isOpen)
                 yield break;
-
-            if (closeRoutine != null)
-                StopCoroutine(closeRoutine);
 
             isOpen = true;
 
@@ -141,9 +137,6 @@ namespace BrunoMikoski.UIManager
             
             OnBeforeClose();
 
-            if (openRoutine != null)
-                StopCoroutine(openRoutine);
-
             yield return TransiteOutEnumerator();
 
             OnAfterClose();
@@ -181,21 +174,25 @@ namespace BrunoMikoski.UIManager
             DispatchOnLostFocus();
         }
 
-        private void StopTransitionsCoroutines()
-        {
-            if (closeRoutine != null)
-                StopCoroutine(closeRoutine);
-
-            if (openRoutine != null)
-                StopCoroutine(openRoutine);
-            
-            closeRoutine = null;
-            openRoutine = null;
-        }
-        
+       
         protected virtual void OnDestroy()
         {
-            StopTransitionsCoroutines();
+            StopActiveTransitionCoroutine();
+        }
+
+        private void StopActiveTransitionCoroutine()
+        {
+            if (activeCoroutine != null)
+            {
+                StopCoroutine(activeCoroutine);
+                activeCoroutine = null;
+            }
+        }
+
+        internal void SetCurrentActiveTransitionCoroutine(Coroutine coroutine)
+        {
+            StopActiveTransitionCoroutine();
+            activeCoroutine = coroutine;
         }
     }
 }

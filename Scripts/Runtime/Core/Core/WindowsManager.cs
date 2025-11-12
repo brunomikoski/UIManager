@@ -180,19 +180,23 @@ namespace BrunoMikoski.UIManager
 
         public void Open(UIWindow uiWindow)
         {
-            StartCoroutine(OpenEnumerator(uiWindow));
-        }
+            if (IsQuitting)
+                return;
 
-        public IEnumerator OpenEnumerator(UIWindow targetUIWindow)
-        {
+            if (IsWindowOpen(uiWindow))
+                return;
+
             Initialize();
             
-            if (!targetUIWindow.HasWindowInstance)
-                CreateWindowInstanceForWindowID(targetUIWindow);
+            if (!uiWindow.HasWindowInstance)
+                CreateWindowInstanceForWindowID(uiWindow);
 
-            if (IsWindowOpen(targetUIWindow))
-                yield break;
+            Coroutine openRoutine = StartCoroutine(OpenEnumerator(uiWindow));
+            uiWindow.WindowInstance.SetCurrentActiveTransitionCoroutine(openRoutine);
+        }
 
+        private IEnumerator OpenEnumerator(UIWindow targetUIWindow)
+        {
             DispatchWindowEvent(WindowEvent.BeforeWindowOpen, targetUIWindow.WindowInstance);
 
             List<WindowController> previouslyOpenWindow = GetAllOpenWindows();
@@ -228,16 +232,17 @@ namespace BrunoMikoski.UIManager
         {
             if (IsQuitting)
                 return;
-            
-            StartCoroutine(CloseEnumerator(uiWindow));
+
+            if (!IsWindowOpen(uiWindow))
+                return;
+
+            Coroutine transitionEnumerator = StartCoroutine(CloseEnumerator(uiWindow));
+            uiWindow.WindowInstance.SetCurrentActiveTransitionCoroutine(transitionEnumerator);
         }
 
-        public IEnumerator CloseEnumerator(UIWindow targetUIWindow)
+        private IEnumerator CloseEnumerator(UIWindow targetUIWindow)
         {
             Initialize();
-            
-            if (!IsWindowOpen(targetUIWindow))
-                yield break;
             
             DispatchWindowEvent(WindowEvent.BeforeWindowClose, targetUIWindow.WindowInstance);
 
@@ -253,7 +258,6 @@ namespace BrunoMikoski.UIManager
             {
                 OnLastWindowFromLayerClosed(targetUIWindow.Layer);
             }
-            
             
             UpdateFocusedWindow();
         }

@@ -99,19 +99,9 @@ namespace BrunoMikoski.UIManager
             WindowsManager.Open(this);
         }
 
-        public IEnumerator OpenEnumerator()
-        {
-            yield return WindowsManager.OpenEnumerator(this);
-        }
-        
         public void Close()
         {
             WindowsManager.Close(this);
-        }
-
-        public IEnumerator CloseEnumerator()
-        {
-            yield return WindowsManager.CloseEnumerator(this);
         }
         
         public void SetWindowInstance(WindowController targetWindowControllerInstance)

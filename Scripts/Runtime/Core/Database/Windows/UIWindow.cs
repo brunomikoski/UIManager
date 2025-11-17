@@ -98,10 +98,29 @@ namespace BrunoMikoski.UIManager
         {
             WindowsManager.Open(this);
         }
+        
+        public IEnumerator OpenEnumerator()
+        {
+            WindowsManager.Open(this);
+            while (!HasWindowInstance || !windowInstance.IsOpen)
+            {
+                yield return null;
+            }
+        }
+
 
         public void Close()
         {
             WindowsManager.Close(this);
+        }
+
+        public IEnumerator CloseEnumerator()
+        {
+            WindowsManager.Close(this);
+            while (HasWindowInstance && windowInstance.IsOpen)
+            {
+                yield return null;
+            }
         }
         
         public void SetWindowInstance(WindowController targetWindowControllerInstance)

@@ -226,6 +226,7 @@ namespace BrunoMikoski.UIManager
             }
             
             UpdateFocusedWindow();
+            targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
         }
         
         public void Close(UIWindow uiWindow)
@@ -260,8 +261,8 @@ namespace BrunoMikoski.UIManager
             }
             
             UpdateFocusedWindow();
+            targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
         }
-
 
         private void OnWindowInstanceOpened(WindowController windowControllerInstance)
         {

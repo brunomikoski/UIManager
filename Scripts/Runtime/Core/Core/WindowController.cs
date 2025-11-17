@@ -21,7 +21,6 @@ namespace BrunoMikoski.UIManager
         private UIWindowIndirectReference window;
         public UIWindow UIWindow => window.Ref;
 
-
         private bool hasCachedRectTransform;
         private RectTransform cachedRectTransform;
         public RectTransform RectTransform
@@ -122,6 +121,26 @@ namespace BrunoMikoski.UIManager
             DispatchOnAfterWindowOpen();
         }
 
+        public void Back()
+        {
+            windowsManager.Back();
+        }
+        
+        public void Close()
+        {
+            windowsManager.Close(UIWindow);
+        }
+
+        public void CloseLast()
+        {
+            windowsManager.CloseLast();
+        }
+
+        public void Open()
+        {
+            windowsManager.Open(UIWindow);
+        }
+
         internal IEnumerator CloseEnumerator()
         {
             if (!isOpen)
@@ -173,7 +192,6 @@ namespace BrunoMikoski.UIManager
         {
             DispatchOnLostFocus();
         }
-
        
         protected virtual void OnDestroy()
         {
@@ -193,6 +211,12 @@ namespace BrunoMikoski.UIManager
         {
             StopActiveTransitionCoroutine();
             activeCoroutine = coroutine;
+        }
+
+        internal void ClearCurrentActiveTransitionCoroutine()
+        {
+            StopActiveTransitionCoroutine();
+            activeCoroutine = null;
         }
     }
 }

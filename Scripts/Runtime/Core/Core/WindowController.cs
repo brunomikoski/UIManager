@@ -15,6 +15,9 @@ namespace BrunoMikoski.UIManager
 
         [SerializeField] 
         private bool disableInteractionWhileTransitioning = true;
+        
+        [SerializeField] 
+        private GameObject gamepadDefaultSelection;
 
         [FormerlySerializedAs("windowIndirectRef")]
         [SerializeField]
@@ -108,6 +111,9 @@ namespace BrunoMikoski.UIManager
             if (hasCachedGraphicRaycaster)
                 GraphicRaycaster.enabled = true;
             
+            if(gamepadDefaultSelection)
+                EventSystem.current.SetSelectedGameObject(gamepadDefaultSelection);
+            
             callback?.Invoke(this);
             OnAfterOpen();
         }
@@ -135,6 +141,7 @@ namespace BrunoMikoski.UIManager
                     GraphicRaycaster.enabled = false;
             }
             
+            EventSystem.current.SetSelectedGameObject(null);
             OnBeforeClose();
 
             yield return TransiteOutEnumerator();

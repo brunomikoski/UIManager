@@ -178,13 +178,13 @@ namespace BrunoMikoski.UIManager
             return resultWindows;
         }
 
-        public void Open(UIWindow uiWindow)
+        public bool Open(UIWindow uiWindow)
         {
             if (IsQuitting)
-                return;
+                return false;
 
             if (IsWindowOpen(uiWindow))
-                return;
+                return false;
 
             Initialize();
             
@@ -193,6 +193,7 @@ namespace BrunoMikoski.UIManager
 
             Coroutine openRoutine = StartCoroutine(OpenEnumerator(uiWindow));
             uiWindow.WindowInstance.SetCurrentActiveTransitionCoroutine(openRoutine);
+            return true;
         }
 
         private IEnumerator OpenEnumerator(UIWindow targetUIWindow)
@@ -229,16 +230,17 @@ namespace BrunoMikoski.UIManager
             targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
         }
         
-        public void Close(UIWindow uiWindow)
+        public bool Close(UIWindow uiWindow)
         {
             if (IsQuitting)
-                return;
+                return false;
 
             if (!IsWindowOpen(uiWindow))
-                return;
+                return false;
 
             Coroutine transitionEnumerator = StartCoroutine(CloseEnumerator(uiWindow));
             uiWindow.WindowInstance.SetCurrentActiveTransitionCoroutine(transitionEnumerator);
+            return true;
         }
 
         private IEnumerator CloseEnumerator(UIWindow targetUIWindow)

@@ -101,10 +101,12 @@ namespace BrunoMikoski.UIManager
         
         public IEnumerator OpenEnumerator()
         {
-            WindowsManager.Open(this);
-            while (!HasWindowInstance || !windowInstance.IsOpen)
+            if (WindowsManager.Open(this))
             {
-                yield return null;
+                while (!windowInstance.IsOpen || windowInstance.HasActiveTransitionCoroutine())
+                {
+                    yield return null;
+                }
             }
         }
 
@@ -116,10 +118,12 @@ namespace BrunoMikoski.UIManager
 
         public IEnumerator CloseEnumerator()
         {
-            WindowsManager.Close(this);
-            while (HasWindowInstance && windowInstance.IsOpen)
+            if (WindowsManager.Close(this))
             {
-                yield return null;
+                while (windowInstance.IsOpen || windowInstance.HasActiveTransitionCoroutine())
+                {
+                    yield return null;
+                }
             }
         }
         

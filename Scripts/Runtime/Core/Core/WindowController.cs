@@ -72,7 +72,8 @@ namespace BrunoMikoski.UIManager
 
         private bool isOpen;
         public bool IsOpen => isOpen;
-        
+
+
         private bool initialized;
         internal bool Initialized => initialized;
 
@@ -91,21 +92,28 @@ namespace BrunoMikoski.UIManager
         {
             if (isOpen)
                 yield break;
-
+            
             isOpen = true;
 
+            OnBeforeOpen();
+            
+            bool wasGraphicRaycasterEnabled = false;
+            if (hasCachedGraphicRaycaster)
+            {
+                wasGraphicRaycasterEnabled = GraphicRaycaster.enabled;
+            }
+            
             if (disableInteractionWhileTransitioning)
             {
                 if (hasCachedGraphicRaycaster)
                     GraphicRaycaster.enabled = false;
             }
 
-            OnBeforeOpen();
-
             yield return TransiteInEnumerator();
             
             if (hasCachedGraphicRaycaster)
-                GraphicRaycaster.enabled = true;
+                GraphicRaycaster.enabled = wasGraphicRaycasterEnabled;
+
             
             callback?.Invoke(this);
             OnAfterOpen();
@@ -145,7 +153,7 @@ namespace BrunoMikoski.UIManager
         {
             if (!isOpen)
                 yield break;
-
+            
             isOpen = false;
 
             if (disableInteractionWhileTransitioning)
@@ -157,6 +165,7 @@ namespace BrunoMikoski.UIManager
             OnBeforeClose();
 
             yield return TransiteOutEnumerator();
+
 
             OnAfterClose();
         }
@@ -217,6 +226,11 @@ namespace BrunoMikoski.UIManager
         {
             StopActiveTransitionCoroutine();
             activeCoroutine = null;
+        }
+
+        public bool HasActiveTransitionCoroutine()
+        {
+            return activeCoroutine != null;
         }
     }
 }

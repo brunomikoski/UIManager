@@ -307,12 +307,23 @@ namespace BrunoMikoski.UIManager
         {
             Initialize();
             
-            if (history.Count == 0)
+            if (history.Count == 0) {
+                CloseFocusedWindow();
                 return;
+            }
+
+            if (!history.Contains(focusedWindowController.UIWindow)) {
+                CloseFocusedWindow();
+                return;
+            }
 
             UIWindow last = history.Last();
             history.RemoveAt(history.Count - 1);
             Close(last);
+        }
+
+        public void CloseFocusedWindow() {
+            focusedWindowController.UIWindow.Close();
         }
 
         public virtual void Back()

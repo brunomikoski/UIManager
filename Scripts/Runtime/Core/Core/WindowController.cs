@@ -111,9 +111,6 @@ namespace BrunoMikoski.UIManager
             if (hasCachedGraphicRaycaster)
                 GraphicRaycaster.enabled = true;
             
-            if(gamepadDefaultSelection)
-                EventSystem.current.SetSelectedGameObject(gamepadDefaultSelection);
-            
             callback?.Invoke(this);
             OnAfterOpen();
         }
@@ -173,6 +170,9 @@ namespace BrunoMikoski.UIManager
 
         internal virtual void OnGainFocus()
         {
+            if(gamepadDefaultSelection)
+                EventSystem.current.SetSelectedGameObject(gamepadDefaultSelection);
+            
             DispatchOnGainFocus();
         }
 

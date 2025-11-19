@@ -141,7 +141,7 @@ namespace BrunoMikoski.UIManager
 
         public void CloseLast()
         {
-            windowsManager.CloseLast();
+            windowsManager.CloseLastOpenWindow();
         }
 
         public void Open()

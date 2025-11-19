@@ -4,7 +4,7 @@ namespace BrunoMikoski.UIManager
     {
         protected override void OnClick()
         {
-            ParentWindowController.WindowsManager.CloseLast();
+            ParentWindowController.WindowsManager.CloseLastOpenWindow();
         }
 
     }

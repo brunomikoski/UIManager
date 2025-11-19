@@ -21,7 +21,7 @@ namespace BrunoMikoski.UIManager
         private Dictionary<LongGuid, RectTransform> layerToRectTransforms = new();
         
         private List<UIWindow> history = new();
-        
+        public IReadOnlyList<UIWindow> History => history;
         private WindowController focusedWindowController;
         private HashSet<object> manuallyFocusedObjects = new();
         
@@ -33,7 +33,9 @@ namespace BrunoMikoski.UIManager
         private Dictionary<UIWindow, WindowController> instantiatedWindows = new();
 
         private bool initialized;
-        private bool isBackEnabled = true;
+        public bool IsBackEnabled { get; private set; }= true;
+
+        public UIWindow LastOpenedWindow { get; private set; }
 
         private static bool IsQuitting;
 
@@ -193,6 +195,7 @@ namespace BrunoMikoski.UIManager
 
             Coroutine openRoutine = StartCoroutine(OpenEnumerator(uiWindow));
             uiWindow.WindowInstance.SetCurrentActiveTransitionCoroutine(openRoutine);
+            LastOpenedWindow = uiWindow;
             return true;
         }
 
@@ -211,12 +214,16 @@ namespace BrunoMikoski.UIManager
                 }
             }
             
-            if (targetUIWindow.Layer.IncludedOnHistory)
-                history.Add(targetUIWindow);
-
             targetUIWindow.WindowInstance.RectTransform.SetAsLastSibling();
 
             yield return targetUIWindow.WindowInstance.OpenEnumerator();
+            if (targetUIWindow.WindowInstance != null && targetUIWindow.Layer.IncludedOnHistory)
+            {
+                if (history.Count == 0 || !ReferenceEquals(history[^1], targetUIWindow))
+                {
+                    history.Add(targetUIWindow);
+                }            
+            }
             
             if (targetUIWindow.WindowInstance != null)
             {
@@ -251,10 +258,11 @@ namespace BrunoMikoski.UIManager
 
             yield return targetUIWindow.WindowInstance.CloseEnumerator();
 
-            //This window might be destroyed at this point
+            if (ReferenceEquals(LastOpenedWindow, targetUIWindow))
+                LastOpenedWindow = null;
+            
             if (targetUIWindow.WindowInstance != null)
                 DispatchWindowEvent(WindowEvent.WindowClosed, targetUIWindow.WindowInstance);
-            
             
             bool layerIsNowEmpty = !TryGetOpenWindowsOfLayer(targetUIWindow.Layer, out List<WindowController> _);
             if (layerIsNowEmpty)
@@ -297,33 +305,44 @@ namespace BrunoMikoski.UIManager
                     continue;
                 if (!uiWindow.WindowInstance.IsOpen)
                     continue;
+                
                 resultOpenWindows.Add(uiWindow.WindowInstance);
             }
 
             return resultOpenWindows;
         }
         
-        public virtual void CloseLast()
+        public virtual void CloseLastOpenWindow()
         {
+            if (LastOpenedWindow == null)
+                return;
+
             Initialize();
-            
-            if (history.Count == 0) {
-                CloseFocusedWindow();
-                return;
+
+            Close(LastOpenedWindow);
+
+            if (history.Count > 0 && ReferenceEquals(history[^1], LastOpenedWindow))
+            {
+                history.RemoveAt(history.Count - 1);
             }
 
-            if (!history.Contains(focusedWindowController.UIWindow)) {
-                CloseFocusedWindow();
-                return;
-            }
-
-            UIWindow last = history.Last();
-            history.RemoveAt(history.Count - 1);
-            Close(last);
+            LastOpenedWindow = null;
         }
 
-        public void CloseFocusedWindow() {
-            focusedWindowController.UIWindow.Close();
+        public virtual void CloseFocusedWindow()
+        {
+            if (focusedWindowController == null)
+                return;
+
+            Initialize();
+
+            Close(focusedWindowController.UIWindow);
+
+            if (ReferenceEquals(LastOpenedWindow, focusedWindowController.UIWindow))
+                LastOpenedWindow = null;
+
+            if (history.Count > 0 && ReferenceEquals(history[^1], focusedWindowController.UIWindow))
+                history.RemoveAt(history.Count - 1);
         }
 
         public virtual void Back()
@@ -333,7 +352,7 @@ namespace BrunoMikoski.UIManager
             if (!CanGoBack())
                 return;
             
-            CloseLast();
+            CloseLastOpenWindow();
             
             UIWindow last = history.Last();
             if (IsWindowOpen(last))
@@ -347,7 +366,7 @@ namespace BrunoMikoski.UIManager
         {
             Initialize();
 
-            if (!isBackEnabled)
+            if (!IsBackEnabled)
                 return false;
             
             if (history.Count <= 1)
@@ -358,7 +377,7 @@ namespace BrunoMikoski.UIManager
 
         public void SetBackEnabled(bool isEnabled)
         {
-            isBackEnabled = isEnabled;
+            IsBackEnabled = isEnabled;
         }
         
         private void UpdateFocusedWindow()
@@ -717,6 +736,11 @@ namespace BrunoMikoski.UIManager
             instantiatedWindows.Remove(uiWindow);
             Destroy(targetInstance.gameObject);
             DispatchWindowEvent(WindowEvent.WindowDestroyed, uiWindow);
+        }
+        
+        public void ClearHistory()
+        {
+            history.Clear();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEditor;
 using UnityEngine;
@@ -9,17 +10,19 @@ namespace BrunoMikoski.UIManager.CustomEditors
     public class WindowsManagerCustomEditor : Editor
     {
         [SerializeField]
-        private UIWindow _selectedUIWindow;
-        private SerializedObject _editorSO;
+        private UIWindow selectedUIWindow;
+        private SerializedObject editorSO;
+        private WindowsManager windowsManager;
 
         private void OnEnable()
         {
-            _editorSO = new SerializedObject(this);
+            editorSO = new SerializedObject(this);
+            windowsManager = (WindowsManager)target;
         }
 
         private void OnDisable()
         {
-            _editorSO = null;
+            editorSO = null;
         }
 
         public override void OnInspectorGUI()
@@ -42,13 +45,13 @@ namespace BrunoMikoski.UIManager.CustomEditors
                     EditorGUILayout.LabelField("Quick Instantiate", EditorStyles.miniBoldLabel);
                     using (new EditorGUILayout.HorizontalScope())
                     {
-                        if (_editorSO != null)
+                        if (editorSO != null)
                         {
-                            _editorSO.Update();
-                            EditorGUILayout.PropertyField(_editorSO.FindProperty("_selectedUIWindow"), GUIContent.none);
-                            _editorSO.ApplyModifiedProperties();
+                            editorSO.Update();
+                            EditorGUILayout.PropertyField(editorSO.FindProperty("selectedUIWindow"), GUIContent.none);
+                            editorSO.ApplyModifiedProperties();
                         }
-                        using (new EditorGUI.DisabledGroupScope(_selectedUIWindow == null))
+                        using (new EditorGUI.DisabledGroupScope(selectedUIWindow == null))
                         {
                             if (GUILayout.Button("Instantiate", EditorStyles.miniButton, GUILayout.Width(100)))
                             {
@@ -58,26 +61,24 @@ namespace BrunoMikoski.UIManager.CustomEditors
                     }
                 }
             }
+            
+            DrawHistoryDebug();
+            DrawFocusDebug();
+            Repaint();
+        }
 
-            // Focus Debug section
+        private void DrawFocusDebug()
+        {
             using (new EditorGUILayout.VerticalScope("Box"))
             {
                 EditorGUILayout.LabelField("Focus Debug", EditorStyles.boldLabel);
 
-                WindowsManager windowsManager = (WindowsManager)target;
                 if (!EditorApplication.isPlaying)
                 {
                     EditorGUILayout.HelpBox("Enter Play Mode to view current focused window and manual focus overrides.", MessageType.Info);
                 }
                 else
                 {
-                    WindowController focused = windowsManager.FocusedWindowController;
-                    using (new EditorGUI.DisabledGroupScope(true))
-                    {
-                        Object focusedObj = focused != null ? (Object)focused : null;
-                        EditorGUILayout.ObjectField("Focused Window", focusedObj, typeof(WindowController), true);
-                    }
-
                     IReadOnlyCollection<object> manual = windowsManager.ManuallyFocusedObjects;
                     int manualCount = manual.Count;
                     if (manualCount > 0)
@@ -105,7 +106,115 @@ namespace BrunoMikoski.UIManager.CustomEditors
                     }
                     else
                     {
-                        EditorGUILayout.LabelField("Manual Focused Objects", "None");
+                        WindowController focused = windowsManager.FocusedWindowController;
+                        using (new EditorGUI.DisabledGroupScope(true))
+                        {
+                            Object focusedObj = focused != null ? (Object)focused : null;
+                            EditorGUILayout.ObjectField("Focused Window", focusedObj, typeof(WindowController), true);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private void DrawHistoryDebug()
+        {
+            using (new EditorGUILayout.VerticalScope("Box"))
+            {
+                EditorGUILayout.LabelField("History Debug", EditorStyles.boldLabel);
+
+                if (!EditorApplication.isPlaying)
+                {
+                    EditorGUILayout.HelpBox("Enter Play Mode to view history.", MessageType.Info);
+                    return;
+                }
+
+                bool canGoBack = windowsManager.CanGoBack();
+                EditorGUILayout.LabelField("Can Go Back", canGoBack ? "Yes" : "No");
+
+                IReadOnlyList<UIWindow> history = windowsManager.History;
+                int count = history?.Count ?? 0;
+                EditorGUILayout.LabelField("Count", count.ToString());
+
+                UIWindow lastOpened = windowsManager.LastOpenedWindow;
+                using (new EditorGUI.DisabledGroupScope(true))
+                {
+                    EditorGUILayout.ObjectField("Last Opened", lastOpened, typeof(UIWindow), false);
+                }
+
+                EditorGUILayout.Space(2);
+
+                if (count == 0)
+                {
+                    EditorGUILayout.LabelField("History", "<empty>");
+                    return;
+                }
+
+                for (int i = 0; i < count; i++)
+                {
+                    int index = i;
+                    UIWindow uiw = history[index];
+                    bool isTop = index == count - 1;
+                    bool isOpen = uiw != null && uiw.IsOpen();
+
+                    using (new EditorGUILayout.HorizontalScope())
+                    {
+                        string label = isTop ? $"[{index}] TOP" : $"[{index}]";
+                        GUILayout.Label(label, GUILayout.Width(70));
+
+                        using (new EditorGUI.DisabledGroupScope(true))
+                        {
+                            EditorGUILayout.ObjectField(uiw, typeof(UIWindow), false);
+                        }
+
+                        GUILayout.Label(isOpen ? "Open" : "Closed", isOpen ? EditorStyles.miniBoldLabel : EditorStyles.miniLabel, GUILayout.Width(55));
+                        if (uiw != null)
+                        {
+                            GUILayout.Label(uiw.Layer != null ? uiw.Layer.name : "<NoLayer>", EditorStyles.miniLabel, GUILayout.Width(100));
+                            GUILayout.Label(uiw.Layer != null && uiw.Layer.IncludedOnHistory ? "History:on" : "History:off", EditorStyles.miniLabel, GUILayout.Width(85));
+                        }
+
+                        using (new EditorGUI.DisabledGroupScope(uiw == null))
+                        {
+                            if (GUILayout.Button("Select", EditorStyles.miniButton, GUILayout.Width(55)) && uiw != null)
+                            {
+                                Selection.activeObject = uiw;
+                                EditorGUIUtility.PingObject(uiw);
+                            }
+
+                            if (GUILayout.Button("Focus", EditorStyles.miniButton, GUILayout.Width(50)) && uiw != null)
+                            {
+                                if (uiw.HasWindowInstance && uiw.WindowInstance)
+                                {
+                                    Selection.activeObject = uiw.WindowInstance.gameObject;
+                                    EditorGUIUtility.PingObject(uiw.WindowInstance.gameObject);
+                                }
+                                else
+                                {
+                                    Selection.activeObject = uiw;
+                                    EditorGUIUtility.PingObject(uiw);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                EditorGUILayout.Space(4);
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    using (new EditorGUI.DisabledGroupScope(!canGoBack))
+                    {
+                        if (GUILayout.Button("Back", EditorStyles.miniButton, GUILayout.Width(60)))
+                        {
+                            windowsManager.Back();
+                        }
+                    }
+
+                    if (GUILayout.Button("Log Stack", EditorStyles.miniButton, GUILayout.Width(80)))
+                    {
+                        IEnumerable<string> names = history.Select(h => h != null ? h.name : "<null>");
+                        Debug.Log($"[WindowsManager] History: [" + string.Join(", ", names) + "]\nTop: " + (history[^1] != null ? history[^1].name : "<null>"));
                     }
                 }
             }
@@ -113,7 +222,6 @@ namespace BrunoMikoski.UIManager.CustomEditors
 
         private void OrganizeHierarchy()
         {
-            WindowsManager windowsManager = (WindowsManager)target;
             Transform root = windowsManager.transform;
 
             List<UILayer> layers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UILayer>();
@@ -188,28 +296,25 @@ namespace BrunoMikoski.UIManager.CustomEditors
 
         private void InstantiateSelectedWindow()
         {
-            if (_selectedUIWindow == null)
+            if (selectedUIWindow == null)
                 return;
 
             WindowsManager windowsManager = (WindowsManager)target;
             Transform root = windowsManager.transform;
 
             List<UILayer> layers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UILayer>();
-            UILayer targetLayer = _selectedUIWindow.Layer != null ? _selectedUIWindow.Layer : (layers.Count > 0 ? layers[0] : null);
+            UILayer targetLayer = selectedUIWindow.Layer != null ? selectedUIWindow.Layer : (layers.Count > 0 ? layers[0] : null);
 
             RectTransform parent = targetLayer != null ? EnsureLayerParent(root, targetLayer) : (RectTransform)root;
 
-            // Try to find an existing instance of this UIWindow in the hierarchy first
-            WindowController existing = FindExistingWindow(root, _selectedUIWindow);
+            WindowController existing = FindExistingWindow(root, selectedUIWindow);
             if (existing != null)
             {
-                // Ensure it lives under the correct layer parent
                 if (existing.transform.parent != parent)
                 {
                     Undo.SetTransformParent(existing.transform, parent, "Reparent UIWindow to Layer");
                 }
 
-                // Enable and bring to front
                 Undo.RecordObject(existing.gameObject, "Enable UIWindow");
                 existing.gameObject.SetActive(true);
                 existing.RectTransform.SetAsLastSibling();
@@ -219,11 +324,10 @@ namespace BrunoMikoski.UIManager.CustomEditors
                 return;
             }
 
-            // Otherwise instantiate a new prefab instance under the proper parent
-            WindowController prefab = _selectedUIWindow.GetWindowPrefab();
+            WindowController prefab = selectedUIWindow.GetWindowPrefab();
             if (prefab == null)
             {
-                Debug.LogError($"Missing WindowController Prefab for {_selectedUIWindow.name}");
+                Debug.LogError($"Missing WindowController Prefab for {selectedUIWindow.name}");
                 return;
             }
 
@@ -243,9 +347,6 @@ namespace BrunoMikoski.UIManager.CustomEditors
                 Selection.activeGameObject = go;
                 EditorGUIUtility.PingObject(go);
             }
-
-            // Keep selection after domain reload
-            // Do not clear _selectedUIWindow; dev may want to instantiate multiple
         }
 
         private static WindowController FindExistingWindow(Transform root, UIWindow target)

@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler))]
+    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
     [DisallowMultipleComponent]
     public partial class WindowsManager : MonoBehaviour
     {
@@ -741,6 +741,16 @@ namespace BrunoMikoski.UIManager
         public void ClearHistory()
         {
             history.Clear();
+        }
+
+        private void OnValidate()
+        {
+            // Check if there is ANY component that is a CanvasScaler or derived from it
+            if (GetComponent<CanvasScaler>() == null)
+            {
+                Debug.LogError($"{name} requires a CanvasScaler or a derived component.");
+                gameObject.AddComponent<CanvasScaler>();
+            }
         }
     }
 }

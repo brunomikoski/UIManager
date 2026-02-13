@@ -237,6 +237,21 @@ namespace BrunoMikoski.UIManager
             targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
         }
         
+        
+        public void CloseAllFromLayer(UILayer popup)
+        {
+            if (IsQuitting)
+                return;
+
+            if (TryGetOpenWindowsOfLayer(popup, out List<WindowController> openWindows))
+            {
+                for (int i = 0; i < openWindows.Count; i++)
+                {
+                    Close(openWindows[i].UIWindow);
+                }
+            }
+        }
+
         public bool Close(UIWindow uiWindow)
         {
             if (IsQuitting)
@@ -727,6 +742,7 @@ namespace BrunoMikoski.UIManager
             if (!uiWindow.HasWindowInstance)
                 return;
             
+            DispatchWindowEvent(WindowEvent.WindowLostFocus, uiWindow);
             DispatchWindowEvent(WindowEvent.BeforeWindowClose, uiWindow);
             DispatchWindowEvent(WindowEvent.WindowClosed, uiWindow);
             DispatchWindowEvent(WindowEvent.BeforeWindowDestroy, uiWindow);

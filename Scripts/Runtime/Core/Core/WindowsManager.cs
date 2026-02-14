@@ -18,7 +18,7 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private UIWindow[] initialWindows;
 
-        private Dictionary<LongGuid, RectTransform> layerToRectTransforms = new();
+        private Dictionary<UILayer, RectTransform> layerToRectTransforms = new();
         
         private List<UIWindow> history = new();
         public IReadOnlyList<UIWindow> History => history;
@@ -125,6 +125,11 @@ namespace BrunoMikoski.UIManager
                 UILayer uiLayer = allKnowLayers[i];
                 uiLayer.Initialize(this);
                 CreateLayer(uiLayer);
+            }
+            
+            foreach (var layerToRectTransform in layerToRectTransforms)
+            {
+                layerToRectTransform.Value.SetSiblingIndex(layerToRectTransform.Key.Index);
             }
 
             for (int i = 0; i < allKnowLayers.Count; i++)
@@ -579,14 +584,12 @@ namespace BrunoMikoski.UIManager
 
         private RectTransform GetParentForLayer(UILayer uiLayer)
         {
-            LongGuid targetUID = uiLayer == null ? allKnowLayers[0].GUID : uiLayer.GUID;
-
-            return layerToRectTransforms[targetUID];
+            return layerToRectTransforms[uiLayer == null ? allKnowLayers[0] : uiLayer];
         }
 
         private RectTransform CreateLayer(UILayer targetUILayer)
         {
-            if (layerToRectTransforms.TryGetValue(targetUILayer.GUID, out RectTransform rectTransform))
+            if (layerToRectTransforms.TryGetValue(targetUILayer, out RectTransform rectTransform))
                 return rectTransform;
 
             Transform layerTransform = transform.Find(targetUILayer.name);
@@ -607,7 +610,7 @@ namespace BrunoMikoski.UIManager
             rectTransform.anchoredPosition = Vector2.zero;
             rectTransform.name = targetUILayer.name;
 
-            layerToRectTransforms.Add(targetUILayer.GUID, rectTransform);
+            layerToRectTransforms.Add(targetUILayer, rectTransform);
             return rectTransform;
         }
 

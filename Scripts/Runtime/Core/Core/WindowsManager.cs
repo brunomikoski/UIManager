@@ -482,7 +482,7 @@ namespace BrunoMikoski.UIManager
             return uiWindow.WindowInstance.IsOpen;
         }
 
-        private bool TryGetOpenWindowsOfLayer(UILayer uiLayer, out List<WindowController> resultWindows)
+        public bool TryGetOpenWindowsOfLayer(UILayer uiLayer, out List<WindowController> resultWindows)
         {
             resultWindows = new List<WindowController>();
             for (int i = 0; i < allKnowWindows.Count; i++)
@@ -502,6 +502,37 @@ namespace BrunoMikoski.UIManager
             }
 
             return resultWindows.Count > 0;
+        }
+        
+        protected bool HasAnythingAboveThisLayerOpen(UILayer targetLayer, params UILayer[] excludedLayers)
+        {
+            int initialLayerIndex = targetLayer.Index + 1;
+            if (initialLayerIndex >= allKnowLayers.Count)
+                return false;
+            
+            for (int i = initialLayerIndex; i < allKnowLayers.Count; i++)
+            {
+                UILayer uiLayer = allKnowLayers[i];
+
+                bool shouldIgnoreLayer = false;
+                foreach (UILayer excludedLayer in excludedLayers)
+                {
+                    if (excludedLayer == uiLayer)
+                    {
+                        shouldIgnoreLayer = true;
+                        break;  
+                    }
+                }
+
+                if (shouldIgnoreLayer)
+                    continue;
+                
+
+                if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> _))
+                    return true;
+            }
+
+            return false;
         }
 
         private bool TryGetFirstOpenWindowOfLayer(UILayer uiLayer, out WindowController resultWindowController)
@@ -771,5 +802,7 @@ namespace BrunoMikoski.UIManager
                 gameObject.AddComponent<CanvasScaler>();
             }
         }
+
+       
     }
 }

@@ -37,5 +37,10 @@ namespace BrunoMikoski.UIManager
         {
             includedOnHistory = shouldIncludeInHistory;
         }
+
+        public bool HasAnyWindowOpen()
+        {
+            return WindowsManager.TryGetOpenWindowsOfLayer(this, out _);
+        }
     }
 }

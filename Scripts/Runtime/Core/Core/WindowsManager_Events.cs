@@ -27,6 +27,30 @@ namespace BrunoMikoski.UIManager
         private List<Action<UILayer, UILayer>> anyLayerFocusChangedCallbacks = new();
         private Dictionary<UILayer, Dictionary<LayerEvent, List<Action>>> layerToEventToCallbackList = new();
         
+        private List<Action<object>> manuallyFocusedObjectsAddedCallbacks = new();
+        private List<Action<object>> manuallyFocusedObjectsRemovedCallbacks = new();
+
+
+        public void SubscribeToManuallyFocusedObjectAdded(Action<object> callback)
+        {
+            manuallyFocusedObjectsAddedCallbacks.Add(callback);
+        }
+        
+        public void UnsubscribeToManuallyFocusedObjectAdded(Action<object> callback)
+        {
+            manuallyFocusedObjectsAddedCallbacks.Remove(callback);
+        }
+
+        public void SubscribeToManuallyFocusedObjectRemoved(Action<object> callback)
+        {
+            manuallyFocusedObjectsRemovedCallbacks.Add(callback);
+        }
+        
+        public void UnsubscribeToManuallyFocusedObjectRemoved(Action<object> callback)
+        {
+            manuallyFocusedObjectsRemovedCallbacks.Remove(callback);
+        }
+        
         public void SubscribeToAnyLayerFocusChangedEvent(Action<UILayer, UILayer> callback)
         {
             if (anyLayerFocusChangedCallbacks.Contains(callback))
@@ -213,7 +237,23 @@ namespace BrunoMikoski.UIManager
                 anyLayerFocusChangedCallbacks[i].Invoke(previousLayer, newLayer);
             }
         }
+        
+        private void DispatchManuallyFocusedObjectAdded(object obj)
+        {
+            for (int i = 0; i < manuallyFocusedObjectsAddedCallbacks.Count; i++)
+            {
+                manuallyFocusedObjectsAddedCallbacks[i]?.Invoke(obj);
+            }
+        }
 
+        private void DispatchManuallyFocusedObjectRemoved(object obj)
+        {
+            for (int i = 0; i < manuallyFocusedObjectsRemovedCallbacks.Count; i++)
+            {
+                manuallyFocusedObjectsRemovedCallbacks[i]?.Invoke(obj);
+            }
+        }
+        
     }
 
     public enum WindowEvent

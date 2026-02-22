@@ -433,12 +433,15 @@ namespace BrunoMikoski.UIManager
         public void AddManuallyFocusedObject(object focusedObject)
         {
             manuallyFocusedObjects.Add(focusedObject);
+            DispatchManuallyFocusedObjectAdded(focusedObject);
             UpdateFocusedWindow();
         }
         
         public void RemoveManuallyFocusedObject(object focusedObject)
         {
             manuallyFocusedObjects.Remove(focusedObject);
+            DispatchManuallyFocusedObjectRemoved(focusedObject);
+            
             UpdateFocusedWindow();
         }
 
@@ -802,7 +805,6 @@ namespace BrunoMikoski.UIManager
                 gameObject.AddComponent<CanvasScaler>();
             }
         }
-
        
     }
 }

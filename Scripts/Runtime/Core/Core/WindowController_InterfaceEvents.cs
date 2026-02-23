@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
@@ -13,9 +14,9 @@ namespace BrunoMikoski.UIManager
         private List<IOnWindowLostFocus> onLostFocusListeners;
 
 
-        private void UpdateListener<T>(ref List<T> targetType) where T : class
+        public static void UpdateListener<T>(GameObject targetGameObject, ref List<T> targetType, bool checkForCache = true) where T : class
         {
-            if (targetType != null && cacheInterfacesInstance) 
+            if (targetType != null && checkForCache) 
                 return;
             
             if (targetType == null)
@@ -23,13 +24,13 @@ namespace BrunoMikoski.UIManager
             else
                 targetType.Clear();
 
-            if (this != null && gameObject != null)
-                gameObject.GetComponentsInChildren(true, targetType);
+            if (targetGameObject != null)
+                targetGameObject.GetComponentsInChildren(true, targetType);
         }
         
         private void DispatchWindowInitialized()
         {
-            UpdateListener(ref onWindowInitializedListeners);
+            UpdateListener(gameObject, ref onWindowInitializedListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onWindowInitializedListeners.Count; i++)
                 onWindowInitializedListeners[i].OnWindowInitialized();
@@ -37,7 +38,7 @@ namespace BrunoMikoski.UIManager
 
         private void DispatchOnBeforeWindowOpen()
         {
-            UpdateListener(ref onBeforeOpenWindowListeners);
+            UpdateListener(gameObject, ref onBeforeOpenWindowListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onBeforeOpenWindowListeners.Count; i++)
                 onBeforeOpenWindowListeners[i].OnBeforeWindowOpen();
@@ -45,7 +46,7 @@ namespace BrunoMikoski.UIManager
         
         private void DispatchOnAfterWindowOpen()
         {
-            UpdateListener(ref onAfterWindowOpenListeners);
+            UpdateListener(gameObject, ref onAfterWindowOpenListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onAfterWindowOpenListeners.Count; i++)
                 onAfterWindowOpenListeners[i].OnWindowOpened();
@@ -53,7 +54,7 @@ namespace BrunoMikoski.UIManager
         
         private void DispatchOnBeforeWindowClose()
         {
-            UpdateListener(ref onBeforeWindowCloseListeners);
+            UpdateListener(gameObject, ref onBeforeWindowCloseListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onBeforeWindowCloseListeners.Count; i++)
                 onBeforeWindowCloseListeners[i].OnBeforeWindowClose();
@@ -61,7 +62,7 @@ namespace BrunoMikoski.UIManager
         
         private void DispatchOnAfterWindowClose()
         {
-            UpdateListener(ref onAfterWindowCloseListeners);
+            UpdateListener(gameObject, ref onAfterWindowCloseListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onAfterWindowCloseListeners.Count; i++)
                 onAfterWindowCloseListeners[i].OnWindowClosed();
@@ -69,7 +70,7 @@ namespace BrunoMikoski.UIManager
 
         private void DispatchOnGainFocus()
         {
-            UpdateListener(ref onGainFocusListeners);
+            UpdateListener(gameObject, ref onGainFocusListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onGainFocusListeners.Count; i++)
                 onGainFocusListeners[i].OnWindowGainedFocus();
@@ -77,7 +78,7 @@ namespace BrunoMikoski.UIManager
 
         private void DispatchOnLostFocus()
         {
-            UpdateListener(ref onLostFocusListeners);
+            UpdateListener(gameObject, ref onLostFocusListeners, cacheInterfacesInstance);
 
             for (int i = 0; i < onLostFocusListeners.Count; i++)
                 onLostFocusListeners[i].OnWindowLostFocus();

@@ -174,12 +174,12 @@ namespace BrunoMikoski.UIManager
             OnAfterClose();
         }
 
-        internal virtual void OnBeforeClose()
+        protected internal virtual void OnBeforeClose()
         {
             DispatchOnBeforeWindowClose();
         }
         
-        internal virtual void OnAfterClose()
+        protected internal virtual void OnAfterClose()
         {
             DispatchOnAfterWindowClose();
         }

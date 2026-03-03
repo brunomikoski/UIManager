@@ -4,6 +4,11 @@ namespace BrunoMikoski.UIManager
     {
         void OnWindowInitialized();
     }
+    
+    public interface IOnWindowWillBeDestroyed
+    {
+        void OnWindowWillBeDestroyed();
+    }
 
     public interface IOnBeforeWindowOpen
     {

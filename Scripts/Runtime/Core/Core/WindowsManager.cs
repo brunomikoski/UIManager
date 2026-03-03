@@ -785,6 +785,10 @@ namespace BrunoMikoski.UIManager
             DispatchWindowEvent(WindowEvent.BeforeWindowDestroy, uiWindow);
 
             WindowController targetInstance = uiWindow.WindowInstance;
+            targetInstance.OnLostFocus();
+            targetInstance.OnBeforeClose();
+            targetInstance.OnAfterClose();
+            targetInstance.OnWillBeDestroyed();
             uiWindow.ClearWindowInstance();
             instantiatedWindows.Remove(uiWindow);
             Destroy(targetInstance.gameObject);

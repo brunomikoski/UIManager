@@ -12,6 +12,7 @@ namespace BrunoMikoski.UIManager
         private List<IOnWindowClosed> onAfterWindowCloseListeners; 
         private List<IOnWindowGainedFocus> onGainFocusListeners; 
         private List<IOnWindowLostFocus> onLostFocusListeners;
+        private List<IOnWindowWillBeDestroyed> onWindowWillBeDestroyed;
 
 
         public static void UpdateListener<T>(GameObject targetGameObject, ref List<T> targetType, bool checkForCache = true) where T : class
@@ -82,6 +83,14 @@ namespace BrunoMikoski.UIManager
 
             for (int i = 0; i < onLostFocusListeners.Count; i++)
                 onLostFocusListeners[i].OnWindowLostFocus();
+        }
+        
+        private void DispatchOnWillBeDestroyed()
+        {
+            UpdateListener(gameObject, ref onWindowWillBeDestroyed, cacheInterfacesInstance);
+
+            for (int i = 0; i < onWindowWillBeDestroyed.Count; i++)
+                onWindowWillBeDestroyed[i].OnWindowWillBeDestroyed();
         }
     }
 }

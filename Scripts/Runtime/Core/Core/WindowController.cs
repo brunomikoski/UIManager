@@ -171,16 +171,15 @@ namespace BrunoMikoski.UIManager
 
             yield return TransiteOutEnumerator();
 
-
             OnAfterClose();
         }
 
-        protected virtual void OnBeforeClose()
+        internal virtual void OnBeforeClose()
         {
             DispatchOnBeforeWindowClose();
         }
         
-        protected virtual void OnAfterClose()
+        internal virtual void OnAfterClose()
         {
             DispatchOnAfterWindowClose();
         }
@@ -245,6 +244,11 @@ namespace BrunoMikoski.UIManager
 
         protected void RemoveGamepadDefaultSelection() {
             EventSystem.current.SetSelectedGameObject(null);
+        }
+
+        public void OnWillBeDestroyed()
+        {
+            DispatchOnWillBeDestroyed();
         }
     }
 }

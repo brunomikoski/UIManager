@@ -214,6 +214,46 @@ namespace BrunoMikoski.UIManager
                         windowEventToAnyWindowCallbackList[targetEvent][i].Invoke(uiWindow);
                     }
                 }
+
+                WindowController windowInstance = uiWindow.WindowInstance;
+                switch (targetEvent)
+                {
+                    case WindowEvent.WindowInitialized:
+                        windowInstance.Events.DispatchWindowInitialized();
+                        break;
+                    case WindowEvent.BeforeWindowOpen:
+                        windowInstance.Events.DispatchOnBeforeWindowOpen();
+                        break;
+                    case WindowEvent.WindowOpened:
+                        windowInstance.Events.DispatchWindowOpened();
+                        break;
+                    case WindowEvent.BeforeWindowClose:
+                        windowInstance.Events.DispatchOnBeforeWindowClose();
+                        break;
+                    case WindowEvent.WindowClosed:
+                        windowInstance.Events.DispatchOnWindowClosed();
+                        break;
+                    case WindowEvent.WindowLostFocus:
+                        windowInstance.Events.DispatchOnLostFocus();
+                        break;
+                    case WindowEvent.WindowGainedFocus:
+                        windowInstance.Events.DispatchOnGainFocus();
+                        break;
+                    case WindowEvent.BeforeWindowLoad:
+                        windowInstance.Events.DispatchOnBeforeWindowLoad();
+                        break;
+                    case WindowEvent.WindowLoaded:
+                        windowInstance.Events.DispatchOnWindowLoaded();
+                        break;
+                    case WindowEvent.BeforeWindowDestroy:
+                        windowInstance.Events.DispatchOnBeforeWindowBeDestroyed();
+                        break;
+                    case WindowEvent.WindowDestroyed:
+                        //There's no event for this, since the instance will be null at this point
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(targetEvent), targetEvent, null);
+                }
             }
         }
 

@@ -7,8 +7,9 @@ using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
+    
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(Canvas), typeof(CanvasGroup))]
+    [RequireComponent(typeof(Canvas), typeof(CanvasGroup), typeof(WindowControllerEvents))]
     public partial class WindowController : MonoBehaviour
     {
         [SerializeField]
@@ -70,6 +71,27 @@ namespace BrunoMikoski.UIManager
                 return cachedGraphicRaycaster;
             }
         }
+        
+        private bool _hasCachedEvents;
+        private WindowControllerEvents _cachedEvents;
+        public WindowControllerEvents Events
+        {
+            get
+            {
+                if (!_hasCachedEvents)
+                {
+                    _cachedEvents = GetComponent<WindowControllerEvents>();
+                    if (_cachedEvents == null)
+                    {
+                        _cachedEvents = gameObject.AddComponent<WindowControllerEvents>();
+                    }
+                    _hasCachedEvents = true;
+                }
+
+                return _cachedEvents;
+            }
+        }
+        
 
         protected WindowsManager windowsManager;
         public WindowsManager WindowsManager => windowsManager;
@@ -89,7 +111,6 @@ namespace BrunoMikoski.UIManager
             windowsManager = targetWindowsManager;
             window = new UIWindowIndirectReference(targetUIWindow);
             initialized = true;
-            DispatchWindowInitialized();
         }
 
         internal IEnumerator OpenEnumerator(Action<WindowController> callback = null)
@@ -99,8 +120,6 @@ namespace BrunoMikoski.UIManager
             
             isOpen = true;
 
-            OnBeforeOpen();
-            
             bool wasGraphicRaycasterEnabled = false;
             if (hasCachedGraphicRaycaster)
             {
@@ -120,18 +139,8 @@ namespace BrunoMikoski.UIManager
 
             
             callback?.Invoke(this);
-            OnAfterOpen();
         }
 
-        protected virtual void OnBeforeOpen()
-        {
-            DispatchOnBeforeWindowOpen();
-        }
-        
-        protected virtual void OnAfterOpen()
-        {
-            DispatchOnAfterWindowOpen();
-        }
 
         public void Back()
         {
@@ -167,22 +176,10 @@ namespace BrunoMikoski.UIManager
             }
             
             RemoveGamepadDefaultSelection();
-            OnBeforeClose();
 
             yield return TransiteOutEnumerator();
-
-            OnAfterClose();
         }
 
-        protected internal virtual void OnBeforeClose()
-        {
-            DispatchOnBeforeWindowClose();
-        }
-        
-        protected internal virtual void OnAfterClose()
-        {
-            DispatchOnAfterWindowClose();
-        }
         
         protected virtual IEnumerator TransiteInEnumerator()
         {
@@ -196,15 +193,6 @@ namespace BrunoMikoski.UIManager
             yield return null;
         }
 
-        internal virtual void OnGainFocus()
-        {
-            DispatchOnGainFocus();
-        }
-
-        internal virtual void OnLostFocus()
-        {
-            DispatchOnLostFocus();
-        }
        
         protected virtual void OnDestroy()
         {
@@ -244,11 +232,6 @@ namespace BrunoMikoski.UIManager
 
         protected void RemoveGamepadDefaultSelection() {
             EventSystem.current.SetSelectedGameObject(null);
-        }
-
-        public void OnWillBeDestroyed()
-        {
-            DispatchOnWillBeDestroyed();
         }
     }
 }

@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster))]
+    [RequireComponent(typeof(Canvas), typeof(GraphicRaycaster), typeof(CanvasScaler))]
     [DisallowMultipleComponent]
     public partial class WindowsManager : MonoBehaviour
     {
@@ -454,14 +454,12 @@ namespace BrunoMikoski.UIManager
 
             if (focusedWindowController != null)
             {
-                focusedWindowController.OnLostFocus();
                 DispatchWindowEvent(WindowEvent.WindowLostFocus, focusedWindowController);
             }
 
             focusedWindowController = targetWindowController;
             if (focusedWindowController != null)
             {
-                focusedWindowController.OnGainFocus();
                 DispatchWindowEvent(WindowEvent.WindowGainedFocus, focusedWindowController);
             }
 
@@ -766,7 +764,7 @@ namespace BrunoMikoski.UIManager
             }
         }
 
-        public void UnloadWindow(UIWindow targetUIWindow)
+        private void UnloadWindow(UIWindow targetUIWindow)
         {
             DestroyWindowInstance(targetUIWindow);
 
@@ -785,10 +783,6 @@ namespace BrunoMikoski.UIManager
             DispatchWindowEvent(WindowEvent.BeforeWindowDestroy, uiWindow);
 
             WindowController targetInstance = uiWindow.WindowInstance;
-            targetInstance.OnLostFocus();
-            targetInstance.OnBeforeClose();
-            targetInstance.OnAfterClose();
-            targetInstance.OnWillBeDestroyed();
             uiWindow.ClearWindowInstance();
             instantiatedWindows.Remove(uiWindow);
             Destroy(targetInstance.gameObject);
@@ -799,16 +793,5 @@ namespace BrunoMikoski.UIManager
         {
             history.Clear();
         }
-
-        private void OnValidate()
-        {
-            // Check if there is ANY component that is a CanvasScaler or derived from it
-            if (GetComponent<CanvasScaler>() == null)
-            {
-                Debug.LogError($"{name} requires a CanvasScaler or a derived component.");
-                gameObject.AddComponent<CanvasScaler>();
-            }
-        }
-       
     }
 }

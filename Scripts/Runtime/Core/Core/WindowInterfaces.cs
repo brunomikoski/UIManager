@@ -5,7 +5,7 @@ namespace BrunoMikoski.UIManager
         void OnWindowInitialized();
     }
     
-    public interface IOnWindowWillBeDestroyed
+    public interface IOnBeforeWindowDestroyed
     {
         void OnWindowWillBeDestroyed();
     }
@@ -34,6 +34,17 @@ namespace BrunoMikoski.UIManager
     {
         void OnWindowGainedFocus();
     }
+    
+    public interface IOnBeforeWindowLoad
+    {
+        void OnBeforeWindowLoad();
+    }
+
+    public interface IOnWindowLoaded
+    {
+        void OnWindowLoaded();
+    }
+    
     
     public interface IOnWindowLostFocus
     {

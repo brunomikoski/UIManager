@@ -162,6 +162,16 @@ namespace BrunoMikoski.UIManager
             windowsManager.Open(UIWindow);
         }
 
+        internal void OnLostFocus()
+        {
+            CanvasGroup.interactable = false;
+        }
+
+        internal void OnGainFocus()
+        {
+            CanvasGroup.interactable = true;
+        }
+
         internal IEnumerator CloseEnumerator()
         {
             if (!isOpen)
@@ -233,5 +243,7 @@ namespace BrunoMikoski.UIManager
         protected void RemoveGamepadDefaultSelection() {
             EventSystem.current.SetSelectedGameObject(null);
         }
+
+       
     }
 }

@@ -455,12 +455,14 @@ namespace BrunoMikoski.UIManager
             if (focusedWindowController != null)
             {
                 DispatchWindowEvent(WindowEvent.WindowLostFocus, focusedWindowController);
+                focusedWindowController.OnLostFocus();
             }
 
             focusedWindowController = targetWindowController;
             if (focusedWindowController != null)
             {
                 DispatchWindowEvent(WindowEvent.WindowGainedFocus, focusedWindowController);
+                focusedWindowController.OnGainFocus();
             }
 
             UILayer newLayer = focusedWindowController != null ? focusedWindowController.UIWindow.Layer : null;

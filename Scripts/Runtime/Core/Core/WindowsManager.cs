@@ -389,7 +389,7 @@ namespace BrunoMikoski.UIManager
             if (!IsBackEnabled)
                 return false;
             
-            if (history.Count <= 1)
+            if (history.Count < 1)
                 return false;
             
             return true;

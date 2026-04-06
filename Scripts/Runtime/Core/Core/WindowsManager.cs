@@ -371,13 +371,16 @@ namespace BrunoMikoski.UIManager
 
             if (!CanGoBack())
                 return;
-            
+
             CloseLastOpenWindow();
-            
+
+            if (history.Count == 0)
+                return;
+
             UIWindow last = history.Last();
             if (IsWindowOpen(last))
                 return;
-            
+
             history.RemoveAt(history.Count - 1);
             Open(last);
         }

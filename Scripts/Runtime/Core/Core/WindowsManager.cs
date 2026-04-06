@@ -239,10 +239,11 @@ namespace BrunoMikoski.UIManager
             }
             
             UpdateFocusedWindow();
-            targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
+            if (targetUIWindow.WindowInstance != null)
+                targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
         }
-        
-        
+
+
         public void CloseAllFromLayer(UILayer popup)
         {
             if (IsQuitting)
@@ -291,7 +292,8 @@ namespace BrunoMikoski.UIManager
             }
             
             UpdateFocusedWindow();
-            targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
+            if (targetUIWindow.WindowInstance != null)
+                targetUIWindow.WindowInstance.ClearCurrentActiveTransitionCoroutine();
         }
 
         private void OnWindowInstanceOpened(WindowController windowControllerInstance)

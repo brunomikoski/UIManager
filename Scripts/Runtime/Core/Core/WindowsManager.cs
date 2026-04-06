@@ -72,6 +72,21 @@ namespace BrunoMikoski.UIManager
         {
             IsQuitting = true;
         }
+
+        protected virtual void OnDestroy()
+        {
+            if (IsQuitting)
+                return;
+
+            for (int i = 0; i < allKnownWindows.Count; i++)
+                allKnownWindows[i].ClearWindowInstance();
+
+            instantiatedWindows.Clear();
+            history.Clear();
+            loadedGroups.Clear();
+            focusedWindowController = null;
+            initialized = false;
+        }
         
         private void InitializeAutoLoadedGroups()
         {

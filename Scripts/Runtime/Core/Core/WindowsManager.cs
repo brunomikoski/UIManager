@@ -781,17 +781,23 @@ namespace BrunoMikoski.UIManager
         {
             if (!uiWindow.HasWindowInstance)
                 return;
-            
-            DispatchWindowEvent(WindowEvent.WindowLostFocus, uiWindow);
-            DispatchWindowEvent(WindowEvent.BeforeWindowClose, uiWindow);
-            DispatchWindowEvent(WindowEvent.WindowClosed, uiWindow);
+
+            if (ReferenceEquals(focusedWindowController, uiWindow.WindowInstance))
+                SetFocusedWindow(null);
+
+            if (uiWindow.IsOpen())
+            {
+                DispatchWindowEvent(WindowEvent.BeforeWindowClose, uiWindow);
+                DispatchWindowEvent(WindowEvent.WindowClosed, uiWindow);
+            }
+
             DispatchWindowEvent(WindowEvent.BeforeWindowDestroy, uiWindow);
+            DispatchWindowEvent(WindowEvent.WindowDestroyed, uiWindow);
 
             WindowController targetInstance = uiWindow.WindowInstance;
             uiWindow.ClearWindowInstance();
             instantiatedWindows.Remove(uiWindow);
             Destroy(targetInstance.gameObject);
-            DispatchWindowEvent(WindowEvent.WindowDestroyed, uiWindow);
         }
         
         public void ClearHistory()

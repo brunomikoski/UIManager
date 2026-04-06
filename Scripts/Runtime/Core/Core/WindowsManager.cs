@@ -32,6 +32,7 @@ namespace BrunoMikoski.UIManager
 
         
         private Dictionary<UIWindow, WindowController> instantiatedWindows = new();
+        private HashSet<UIGroup> loadedGroups = new();
 
         private bool initialized;
         public bool IsBackEnabled { get; private set; }= true;
@@ -86,6 +87,7 @@ namespace BrunoMikoski.UIManager
                     UIWindow autoLoadedUIWindow = autoLoadedWindows[j];
                     InstantiateWindow(autoLoadedUIWindow);
                 }
+                loadedGroups.Add(uiGroup);
             }
         }
 
@@ -736,10 +738,11 @@ namespace BrunoMikoski.UIManager
             {
                 if (allWindows[i].HasWindowInstance)
                     continue;
-                
+
                 CreateWindowInstanceForWindowID(allWindows[i]);
             }
-            
+
+            loadedGroups.Add(targetUIGroupToLoad);
             onLoadedCallback?.Invoke();
         }
 
@@ -786,18 +789,36 @@ namespace BrunoMikoski.UIManager
                 
                 CreateWindowInstanceForWindowID(allWindows[i]);
             }
-            
+
+            loadedGroups.Add(targetUIGroupToLoad);
             onLoadedCallback?.Invoke();
         }
 
         public void UnloadGroup(params UIGroup[] targetGroupToUnload)
         {
             Initialize();
+
+            for (int i = 0; i < targetGroupToUnload.Length; i++)
+                loadedGroups.Remove(targetGroupToUnload[i]);
+
             List<UIWindow> allWindows = GetAllWindowsFromGroups(targetGroupToUnload);
             for (int i = 0; i < allWindows.Count; i++)
             {
+                if (IsWindowNeededByLoadedGroup(allWindows[i]))
+                    continue;
+
                 UnloadWindow(allWindows[i]);
             }
+        }
+
+        private bool IsWindowNeededByLoadedGroup(UIWindow uiWindow)
+        {
+            foreach (UIGroup loadedGroup in loadedGroups)
+            {
+                if (uiWindow.Group.Contains(loadedGroup))
+                    return true;
+            }
+            return false;
         }
 
         private void UnloadWindow(UIWindow targetUIWindow)

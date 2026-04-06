@@ -22,7 +22,7 @@ namespace BrunoMikoski.UIManager
 
         private Dictionary<WindowEvent, List<Action<UIWindow>>> windowEventToAnyWindowCallbackList = new();
         private Dictionary<UIWindow, Dictionary<WindowEvent, List<Action>>> windowToEventToCallbackList = new();
-        private List<TransitionEventData> transationEvents = new();
+        private List<TransitionEventData> transitionEvents = new();
 
         private List<Action<UILayer, UILayer>> anyLayerFocusChangedCallbacks = new();
         private Dictionary<UILayer, Dictionary<LayerEvent, List<Action>>> layerToEventToCallbackList = new();
@@ -93,7 +93,7 @@ namespace BrunoMikoski.UIManager
             if (TryGetTransitionEventData(fromUIWindow, toUIWindow, callback, out _))
                 return;
             
-            transationEvents.Add(new TransitionEventData(fromUIWindow, toUIWindow, callback));
+            transitionEvents.Add(new TransitionEventData(fromUIWindow, toUIWindow, callback));
         }
         
         public void UnsubscribeToTransitionEvent(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback)
@@ -101,7 +101,7 @@ namespace BrunoMikoski.UIManager
             if (!TryGetTransitionEventData(fromUIWindow, toUIWindow, callback, out TransitionEventData result))
                 return;
 
-            transationEvents.Remove(result);
+            transitionEvents.Remove(result);
         }
         
         public void SubscribeToAnyWindowEvent(WindowEvent targetEvent, Action<UIWindow> callback)
@@ -157,9 +157,9 @@ namespace BrunoMikoski.UIManager
             for (int i = 0; i < fromWindows.Count; i++)
             {
                 WindowController fromWindowController = fromWindows[i];
-                for (int j = 0; j < transationEvents.Count; j++)
+                for (int j = 0; j < transitionEvents.Count; j++)
                 {
-                    TransitionEventData transition = transationEvents[j];
+                    TransitionEventData transition = transitionEvents[j];
                     if (transition.FromUIWindow == fromWindowController.UIWindow
                         && transition.ToUIWindow == toWindowController.UIWindow)
                     {
@@ -171,9 +171,9 @@ namespace BrunoMikoski.UIManager
 
         private bool TryGetTransitionEventData(UIWindow fromUIWindow, UIWindow toUIWindow, Action callback, out TransitionEventData result)
         {
-            for (int i = 0; i < transationEvents.Count; i++)
+            for (int i = 0; i < transitionEvents.Count; i++)
             {
-                TransitionEventData transitionEventData = transationEvents[i];
+                TransitionEventData transitionEventData = transitionEvents[i];
                 if (transitionEventData.FromUIWindow == fromUIWindow
                     && transitionEventData.ToUIWindow == toUIWindow
                     && transitionEventData.Callback == callback)

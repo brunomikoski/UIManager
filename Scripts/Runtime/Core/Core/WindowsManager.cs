@@ -26,9 +26,9 @@ namespace BrunoMikoski.UIManager
         private WindowController focusedWindowController;
         private HashSet<object> manuallyFocusedObjects = new();
         
-        private List<UIWindow> allKnowWindows;
-        private List<UIGroup> allKnowGroups;
-        private List<UILayer> allKnowLayers;
+        private List<UIWindow> allKnownWindows;
+        private List<UIGroup> allKnownGroups;
+        private List<UILayer> allKnownLayers;
 
         
         private Dictionary<UIWindow, WindowController> instantiatedWindows = new();
@@ -56,9 +56,9 @@ namespace BrunoMikoski.UIManager
             if (initialized)
                 return;
 
-            allKnowWindows = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UIWindow>();
-            allKnowGroups = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UIGroup>();
-            allKnowLayers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UILayer>();
+            allKnownWindows = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UIWindow>();
+            allKnownGroups = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UIGroup>();
+            allKnownLayers = CollectionsRegistry.Instance.GetAllCollectionItemsOfType<UILayer>();
 
             InitializeLayers();
             InitializeWindowIDs();
@@ -75,9 +75,9 @@ namespace BrunoMikoski.UIManager
         
         private void InitializeAutoLoadedGroups()
         {
-            for (int i = 0; i < allKnowGroups.Count; i++)
+            for (int i = 0; i < allKnownGroups.Count; i++)
             {
-                UIGroup uiGroup = allKnowGroups[i];
+                UIGroup uiGroup = allKnownGroups[i];
                 if (!uiGroup.AutoLoaded) 
                     continue;
                 
@@ -123,9 +123,9 @@ namespace BrunoMikoski.UIManager
 
         private void InitializeLayers()
         {
-            for (int i = 0; i < allKnowLayers.Count; i++)
+            for (int i = 0; i < allKnownLayers.Count; i++)
             {
-                UILayer uiLayer = allKnowLayers[i];
+                UILayer uiLayer = allKnownLayers[i];
                 uiLayer.Initialize(this);
                 CreateLayer(uiLayer);
             }
@@ -135,9 +135,9 @@ namespace BrunoMikoski.UIManager
                 layerToRectTransform.Value.SetSiblingIndex(layerToRectTransform.Key.Index);
             }
 
-            for (int i = 0; i < allKnowLayers.Count; i++)
+            for (int i = 0; i < allKnownLayers.Count; i++)
             {
-                UILayer uiLayer = allKnowLayers[i];
+                UILayer uiLayer = allKnownLayers[i];
 
                 RectTransform parentRectTransform = GetParentForLayer(uiLayer);
                 parentRectTransform.SetSiblingIndex(uiLayer.Collection.IndexOf(uiLayer));
@@ -146,8 +146,8 @@ namespace BrunoMikoski.UIManager
 
         private void InitializeWindowIDs()
         {
-            for (int i = 0; i < allKnowWindows.Count; i++)
-                allKnowWindows[i].Initialize(this);
+            for (int i = 0; i < allKnownWindows.Count; i++)
+                allKnownWindows[i].Initialize(this);
         }
 
         protected void LoadInitialWindows()
@@ -172,9 +172,9 @@ namespace BrunoMikoski.UIManager
         private List<UIWindow> GetAllWindowsFromGroups(params UIGroup[] targetGroups)
         {
             List<UIWindow> resultWindows = new List<UIWindow>();
-            for (int i = 0; i < allKnowWindows.Count; i++)
+            for (int i = 0; i < allKnownWindows.Count; i++)
             {
-                UIWindow uiWindow = allKnowWindows[i];
+                UIWindow uiWindow = allKnownWindows[i];
                 for (int j = 0; j < targetGroups.Length; j++)
                 {
                     UIGroup targetUIGroup = targetGroups[j];
@@ -328,9 +328,9 @@ namespace BrunoMikoski.UIManager
         private List<WindowController> GetAllOpenWindows()
         {
             List<WindowController> resultOpenWindows = new List<WindowController>();
-            for (int i = 0; i < allKnowWindows.Count; i++)
+            for (int i = 0; i < allKnownWindows.Count; i++)
             {
-                UIWindow uiWindow = allKnowWindows[i];
+                UIWindow uiWindow = allKnownWindows[i];
                 
                 if (!uiWindow.HasWindowInstance)
                     continue;
@@ -423,9 +423,9 @@ namespace BrunoMikoski.UIManager
             }
             
             List<WindowController> openWindows = ListPool<WindowController>.Get();
-            for (int i = allKnowLayers.Count - 1; i >= 0; i--)
+            for (int i = allKnownLayers.Count - 1; i >= 0; i--)
             {
-                UILayer uiLayer = allKnowLayers[i];
+                UILayer uiLayer = allKnownLayers[i];
                 if (TryGetOpenWindowsOfLayer(uiLayer, openWindows))
                 {
                     openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
@@ -516,9 +516,9 @@ namespace BrunoMikoski.UIManager
             else
                 resultWindows.Clear();
 
-            for (int i = 0; i < allKnowWindows.Count; i++)
+            for (int i = 0; i < allKnownWindows.Count; i++)
             {
-                UIWindow uiWindow = allKnowWindows[i];
+                UIWindow uiWindow = allKnownWindows[i];
 
                 if (!uiWindow.HasWindowInstance)
                     continue;
@@ -538,12 +538,12 @@ namespace BrunoMikoski.UIManager
         protected bool HasAnythingAboveThisLayerOpen(UILayer targetLayer, params UILayer[] excludedLayers)
         {
             int initialLayerIndex = targetLayer.Index + 1;
-            if (initialLayerIndex >= allKnowLayers.Count)
+            if (initialLayerIndex >= allKnownLayers.Count)
                 return false;
             
-            for (int i = initialLayerIndex; i < allKnowLayers.Count; i++)
+            for (int i = initialLayerIndex; i < allKnownLayers.Count; i++)
             {
-                UILayer uiLayer = allKnowLayers[i];
+                UILayer uiLayer = allKnownLayers[i];
 
                 bool shouldIgnoreLayer = false;
                 foreach (UILayer excludedLayer in excludedLayers)
@@ -590,9 +590,9 @@ namespace BrunoMikoski.UIManager
         {
             int biggestSiblingIndex = int.MinValue;
             WindowController resultWindowController = null;
-            for (int i = 0; i < allKnowWindows.Count; i++)
+            for (int i = 0; i < allKnownWindows.Count; i++)
             {
-                UIWindow uiWindow = allKnowWindows[i];
+                UIWindow uiWindow = allKnownWindows[i];
 
                 if (!uiWindow.HasWindowInstance)
                     continue;
@@ -636,7 +636,7 @@ namespace BrunoMikoski.UIManager
             
             UILayer uiLayer = uiWindow.Layer;
             if (uiLayer == null)
-                uiLayer = allKnowLayers[0];
+                uiLayer = allKnownLayers[0];
 
             RectTransform parentLayer = GetParentForLayer(uiLayer);
             if (windowControllerInstance.RectTransform.parent != parentLayer)
@@ -654,7 +654,7 @@ namespace BrunoMikoski.UIManager
 
         private RectTransform GetParentForLayer(UILayer uiLayer)
         {
-            return layerToRectTransforms[uiLayer == null ? allKnowLayers[0] : uiLayer];
+            return layerToRectTransforms[uiLayer == null ? allKnownLayers[0] : uiLayer];
         }
 
         private RectTransform CreateLayer(UILayer targetUILayer)

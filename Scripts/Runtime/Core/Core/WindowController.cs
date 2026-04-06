@@ -129,7 +129,7 @@ namespace BrunoMikoski.UIManager
                     GraphicRaycaster.enabled = false;
             }
 
-            yield return TransiteInEnumerator();
+            yield return TransitionInEnumerator();
             
             if (hasCachedGraphicRaycaster)
                 GraphicRaycaster.enabled = wasGraphicRaycasterEnabled;
@@ -182,17 +182,17 @@ namespace BrunoMikoski.UIManager
                     GraphicRaycaster.enabled = false;
             }
 
-            yield return TransiteOutEnumerator();
+            yield return TransitionOutEnumerator();
         }
 
         
-        protected virtual IEnumerator TransiteInEnumerator()
+        protected virtual IEnumerator TransitionInEnumerator()
         {
             gameObject.SetActive(true);
             yield return null;
         }
         
-        protected virtual IEnumerator TransiteOutEnumerator()
+        protected virtual IEnumerator TransitionOutEnumerator()
         {
             gameObject.SetActive(false);
             yield return null;

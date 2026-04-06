@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using BrunoMikoski.ScriptableObjectCollections;
 using UnityEngine;
+using UnityEngine.Pool;
 
 namespace BrunoMikoski.UIManager
 {
@@ -40,7 +42,10 @@ namespace BrunoMikoski.UIManager
 
         public bool HasAnyWindowOpen()
         {
-            return WindowsManager.TryGetOpenWindowsOfLayer(this, out _);
+            List<WindowController> windows = ListPool<WindowController>.Get();
+            bool hasOpen = WindowsManager.TryGetOpenWindowsOfLayer(this, windows);
+            ListPool<WindowController>.Release(windows);
+            return hasOpen;
         }
     }
 }

@@ -7,6 +7,7 @@ using BrunoMikoski.ScriptableObjectCollections;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Pool;
 using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
@@ -210,7 +211,8 @@ namespace BrunoMikoski.UIManager
 
             List<WindowController> previouslyOpenWindow = GetAllOpenWindows();
             UILayer windowUILayer = targetUIWindow.Layer;
-            bool layerWasEmpty = !TryGetOpenWindowsOfLayer(windowUILayer, out List<WindowController> layerOpenWindows);
+            List<WindowController> layerOpenWindows = ListPool<WindowController>.Get();
+            bool layerWasEmpty = !TryGetOpenWindowsOfLayer(windowUILayer, layerOpenWindows);
             if (!layerWasEmpty && windowUILayer.Behaviour == UILayerBehaviour.Exclusive)
             {
                 for (int i = 0; i < layerOpenWindows.Count; i++)
@@ -218,6 +220,7 @@ namespace BrunoMikoski.UIManager
                     Close(layerOpenWindows[i].UIWindow);
                 }
             }
+            ListPool<WindowController>.Release(layerOpenWindows);
             
             targetUIWindow.WindowInstance.RectTransform.SetAsLastSibling();
 
@@ -249,13 +252,15 @@ namespace BrunoMikoski.UIManager
             if (IsQuitting)
                 return;
 
-            if (TryGetOpenWindowsOfLayer(popup, out List<WindowController> openWindows))
+            List<WindowController> openWindows = ListPool<WindowController>.Get();
+            if (TryGetOpenWindowsOfLayer(popup, openWindows))
             {
                 for (int i = 0; i < openWindows.Count; i++)
                 {
                     Close(openWindows[i].UIWindow);
                 }
             }
+            ListPool<WindowController>.Release(openWindows);
         }
 
         public bool Close(UIWindow uiWindow)
@@ -285,7 +290,9 @@ namespace BrunoMikoski.UIManager
             if (targetUIWindow.WindowInstance != null)
                 DispatchWindowEvent(WindowEvent.WindowClosed, targetUIWindow.WindowInstance);
             
-            bool layerIsNowEmpty = !TryGetOpenWindowsOfLayer(targetUIWindow.Layer, out List<WindowController> _);
+            List<WindowController> remainingWindows = ListPool<WindowController>.Get();
+            bool layerIsNowEmpty = !TryGetOpenWindowsOfLayer(targetUIWindow.Layer, remainingWindows);
+            ListPool<WindowController>.Release(remainingWindows);
             if (layerIsNowEmpty)
             {
                 OnLastWindowFromLayerClosed(targetUIWindow.Layer);
@@ -413,28 +420,38 @@ namespace BrunoMikoski.UIManager
                 return;
             }
             
+            List<WindowController> openWindows = ListPool<WindowController>.Get();
             for (int i = allKnowLayers.Count - 1; i >= 0; i--)
             {
                 UILayer uiLayer = allKnowLayers[i];
-                if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> openWindows))
+                if (TryGetOpenWindowsOfLayer(uiLayer, openWindows))
                 {
                     openWindows.Sort((windowA, windowB) => windowA.RectTransform.GetSiblingIndex()
                         .CompareTo(windowB.RectTransform.GetSiblingIndex()));
 
+                    WindowController found = null;
                     for (int j = openWindows.Count - 1; j >= 0; j--)
                     {
                         WindowController windowController = openWindows[j];
                         if (!windowController.UIWindow.CanReceiveFocus)
                             continue;
-                        
-                        SetFocusedWindow(windowController);
+
+                        found = windowController;
+                        break;
+                    }
+
+                    if (found != null)
+                    {
+                        ListPool<WindowController>.Release(openWindows);
+                        SetFocusedWindow(found);
                         return;
                     }
                 }
             }
+            ListPool<WindowController>.Release(openWindows);
         }
 
-        
+
         public void AddManuallyFocusedObject(object focusedObject)
         {
             manuallyFocusedObjects.Add(focusedObject);
@@ -490,22 +507,26 @@ namespace BrunoMikoski.UIManager
             return uiWindow.WindowInstance.IsOpen;
         }
 
-        public bool TryGetOpenWindowsOfLayer(UILayer uiLayer, out List<WindowController> resultWindows)
+        public bool TryGetOpenWindowsOfLayer(UILayer uiLayer, List<WindowController> resultWindows)
         {
-            resultWindows = new List<WindowController>();
+            if (resultWindows == null)
+                resultWindows = new List<WindowController>();
+            else
+                resultWindows.Clear();
+
             for (int i = 0; i < allKnowWindows.Count; i++)
             {
                 UIWindow uiWindow = allKnowWindows[i];
 
                 if (!uiWindow.HasWindowInstance)
                     continue;
-                
+
                 if (uiWindow.Layer != uiLayer)
                     continue;
 
                 if (!uiWindow.IsOpen())
                     continue;
-                
+
                 resultWindows.Add(uiWindow.WindowInstance);
             }
 
@@ -536,8 +557,13 @@ namespace BrunoMikoski.UIManager
                     continue;
                 
 
-                if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> _))
+                List<WindowController> layerWindows = ListPool<WindowController>.Get();
+                if (TryGetOpenWindowsOfLayer(uiLayer, layerWindows))
+                {
+                    ListPool<WindowController>.Release(layerWindows);
                     return true;
+                }
+                ListPool<WindowController>.Release(layerWindows);
             }
 
             return false;
@@ -545,12 +571,15 @@ namespace BrunoMikoski.UIManager
 
         private bool TryGetFirstOpenWindowOfLayer(UILayer uiLayer, out WindowController resultWindowController)
         {
-            if (TryGetOpenWindowsOfLayer(uiLayer, out List<WindowController> windows))
+            List<WindowController> windows = ListPool<WindowController>.Get();
+            if (TryGetOpenWindowsOfLayer(uiLayer, windows))
             {
                 resultWindowController = windows[0];
+                ListPool<WindowController>.Release(windows);
                 return true;
             }
 
+            ListPool<WindowController>.Release(windows);
             resultWindowController = null;
             return false;
         }

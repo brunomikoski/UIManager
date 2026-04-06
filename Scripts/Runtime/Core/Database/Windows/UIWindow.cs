@@ -36,7 +36,7 @@ namespace BrunoMikoski.UIManager
         public event Action OnWillOpenEvent
         {
             add => WindowsManager.SubscribeToWindowEvent(WindowEvent.BeforeWindowOpen, this, value);
-            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.BeforeWindowClose, this, value);
+            remove => WindowsManager.UnsubscribeToWindowEvent(WindowEvent.BeforeWindowOpen, this, value);
         }
 
         public event Action OnOpenedEvent

@@ -139,7 +139,8 @@ namespace BrunoMikoski.UIManager
 
         public virtual WindowController GetWindowPrefab()
         {
-            return windowInstance;
+            Debug.LogError($"{name} does not have a prefab source. Use PrefabUIWindow or AddressablesUIWindow.");
+            return null;
         }
         
         public bool IsFocused()

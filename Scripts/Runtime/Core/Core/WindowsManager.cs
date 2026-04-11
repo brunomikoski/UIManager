@@ -78,8 +78,11 @@ namespace BrunoMikoski.UIManager
             if (IsQuitting)
                 return;
 
-            for (int i = 0; i < allKnownWindows.Count; i++)
-                allKnownWindows[i].ClearWindowInstance();
+            if (allKnownWindows != null)
+            {
+                for (int i = 0; i < allKnownWindows.Count; i++)
+                    allKnownWindows[i].ClearWindowInstance();
+            }
 
             instantiatedWindows.Clear();
             history.Clear();

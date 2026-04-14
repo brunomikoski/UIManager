@@ -7,7 +7,6 @@ using UnityEngine.UI;
 
 namespace BrunoMikoski.UIManager
 {
-    
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Canvas), typeof(CanvasGroup), typeof(WindowControllerEvents))]
     public partial class WindowController : MonoBehaviour
@@ -22,6 +21,12 @@ namespace BrunoMikoski.UIManager
         [SerializeField]
         private UIWindowIndirectReference window;
         public UIWindow UIWindow => window.Ref;
+
+        [Header("Animations")]
+        [SerializeField]
+        public WindowTransitionAnimationControllerBase transitionIn;
+        [SerializeField]
+        public WindowTransitionAnimationControllerBase transitionOut;
 
         private bool hasCachedRectTransform;
         private RectTransform cachedRectTransform;
@@ -185,19 +190,38 @@ namespace BrunoMikoski.UIManager
             yield return TransitionOutEnumerator();
         }
 
-        
+
         protected virtual IEnumerator TransitionInEnumerator()
         {
-            gameObject.SetActive(true);
-            yield return null;
-        }
-        
-        protected virtual IEnumerator TransitionOutEnumerator()
-        {
-            gameObject.SetActive(false);
-            yield return null;
+            if (transitionIn != null)
+            {
+                transitionIn.BeforeTransitionStart(this);
+                gameObject.SetActive(true);
+                yield return StartCoroutine(transitionIn.TransitionEnumerator());
+                transitionIn.AfterTransitionFinished(this);
+            }
+            else
+            {
+                gameObject.SetActive(true);
+                yield return null;
+            }
         }
 
+        protected virtual IEnumerator TransitionOutEnumerator()
+        {
+            if (transitionOut != null)
+            {
+                transitionOut.BeforeTransitionStart(this);
+                yield return StartCoroutine(transitionOut.TransitionEnumerator());
+                gameObject.SetActive(false);
+                transitionOut.AfterTransitionFinished(this);
+            }
+            else
+            {
+                gameObject.SetActive(false);
+                yield return null;
+            }
+        }
        
         protected virtual void OnDestroy()
         {

@@ -11,9 +11,6 @@ namespace BrunoMikoski.UIManager
     [RequireComponent(typeof(Canvas), typeof(CanvasGroup), typeof(WindowControllerEvents))]
     public partial class WindowController : MonoBehaviour
     {
-        [SerializeField]
-        private bool cacheInterfacesInstance = true;
-
         [SerializeField] 
         private bool disableInteractionWhileTransitioning = true;
         

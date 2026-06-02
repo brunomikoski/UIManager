@@ -552,6 +552,25 @@ namespace BrunoMikoski.UIManager
 
             return resultWindows.Count > 0;
         }
+
+        public bool HasAnyWindowOpenOnLayer(UILayer uiLayer)
+        {
+            for (int i = 0; i < allKnownWindows.Count; i++)
+            {
+                UIWindow uiWindow = allKnownWindows[i];
+
+                if (!uiWindow.HasWindowInstance)
+                    continue;
+
+                if (uiWindow.Layer != uiLayer)
+                    continue;
+
+                if (!uiWindow.IsOpen())
+                    return true;
+            }
+
+            return false;
+        }
         
         protected bool HasAnythingAboveThisLayerOpen(UILayer targetLayer, params UILayer[] excludedLayers)
         {

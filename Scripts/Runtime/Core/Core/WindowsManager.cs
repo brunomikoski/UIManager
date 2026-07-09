@@ -283,6 +283,18 @@ namespace BrunoMikoski.UIManager
             ListPool<WindowController>.Release(openWindows);
         }
 
+        public void CloseAllFromGroups(params UIGroup[] targetGroups)
+        {
+            if (IsQuitting)
+                return;
+
+            List<UIWindow> allWindows = GetAllWindowsFromGroups(targetGroups);
+            for (int i = 0; i < allWindows.Count; i++)
+            {
+                Close(allWindows[i]);
+            }
+        }
+
         public bool Close(UIWindow uiWindow)
         {
             if (IsQuitting)

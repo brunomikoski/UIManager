@@ -1,7 +1,9 @@
 #if USE_ADDRESSABLES
 using System;
+#if UNITASK_AVAILABLE
 using System.Threading;
 using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -71,6 +73,7 @@ namespace BrunoMikoski.UIManager
             loadingOperation.Value.Completed += LoadingComplete;
         }
 
+#if UNITASK_AVAILABLE
         UniTask IAsyncPrefabLoader.LoadPrefabAsync(CancellationToken cancellationToken, Action callback)
         {
             if (cachedWindowControllerPrefab != null)
@@ -95,6 +98,7 @@ namespace BrunoMikoski.UIManager
             CacheWindowPrefabFromLoadingOperation();
             callback?.Invoke();
         }
+#endif
 
         private void CacheWindowPrefabFromLoadingOperation()
         {
@@ -111,11 +115,13 @@ namespace BrunoMikoski.UIManager
             loadingOperation = null;
         }
 
+#if UNITASK_AVAILABLE
         UniTask IAsyncPrefabLoader.UnloadPrefabAsync(CancellationToken cancellationToken)
         {
             ((IAsyncPrefabLoader)this).UnloadPrefab();
             return UniTask.CompletedTask;
         }
+#endif
 
         public bool IsLoaded()
         {

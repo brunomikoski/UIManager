@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using BrunoMikoski.ScriptableObjectCollections;
+#if UNITASK_AVAILABLE
+using System.Threading;
 using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Pool;
@@ -795,6 +797,7 @@ namespace BrunoMikoski.UIManager
             onLoadedCallback?.Invoke();
         }
 
+#if UNITASK_AVAILABLE
         public async UniTask LoadGroup_Async(UIGroup targetUIGroupToLoad, CancellationToken cancellationToken = default, Action onLoadedCallback = null)
         {
             Initialize();
@@ -842,6 +845,7 @@ namespace BrunoMikoski.UIManager
             loadedGroups.Add(targetUIGroupToLoad);
             onLoadedCallback?.Invoke();
         }
+#endif
 
         public void UnloadGroup(params UIGroup[] targetGroupToUnload)
         {

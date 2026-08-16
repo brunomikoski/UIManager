@@ -2,7 +2,7 @@
   "name": "com.brunomikoski.uimanager",
   "displayName": "UI Manager",
   "version": "0.1.0",
-  "unity": "2018.4",
+  "unity": "6000.0",
   "description": "UI Manager",
   "keywords": [
     "windows manager",

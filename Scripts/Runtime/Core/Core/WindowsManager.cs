@@ -580,12 +580,14 @@ namespace BrunoMikoski.UIManager
                     continue;
 
                 if (!uiWindow.IsOpen())
-                    return true;
+                    continue;
+
+                return true;
             }
 
             return false;
         }
-        
+
         protected bool HasAnythingAboveThisLayerOpen(UILayer targetLayer, params UILayer[] excludedLayers)
         {
             int initialLayerIndex = targetLayer.Index + 1;

@@ -2,14 +2,20 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public class PrefabUIWindow : UIWindow
+    public abstract class PrefabUIWindow<T> : UIWindow where T : WindowController
     {
         [SerializeField]
-        private WindowController windowControllerPrefab;
+        private T windowControllerPrefab;
+
+        public new T WindowInstance => (T)base.WindowInstance;
 
         public override WindowController GetWindowPrefab()
         {
             return windowControllerPrefab;
         }
+    }
+
+    public class PrefabUIWindow : PrefabUIWindow<WindowController>
+    {
     }
 }

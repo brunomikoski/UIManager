@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace BrunoMikoski.UIManager
 {
-    public  class UIWindow : ScriptableObjectCollectionItem
+    public class UIWindow : ScriptableObjectCollectionItem
     {
         [SerializeField]
         private UILayer layer;

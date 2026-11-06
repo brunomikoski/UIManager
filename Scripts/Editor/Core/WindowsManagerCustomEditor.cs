@@ -324,6 +324,12 @@ namespace BrunoMikoski.UIManager.CustomEditors
                 return;
             }
 
+            if (selectedUIWindow.IsPlacedInScene)
+            {
+                Debug.LogWarning($"WindowsManagerCustomEditor->InstantiateSelectedWindow: {selectedUIWindow.name} is placed in a scene, so it has no prefab to instantiate");
+                return;
+            }
+
             WindowController prefab = selectedUIWindow.GetWindowPrefab();
             if (prefab == null)
             {

@@ -181,6 +181,9 @@ namespace BrunoMikoski.UIManager
             if (uiWindow.HasWindowInstance)
                 return;
 
+            if (uiWindow.IsPlacedInScene)
+                return;
+
             WindowController windowController = uiWindow.GetWindowPrefab();
             if (windowController == null)
                 throw new NullReferenceException($"{uiWindow} is missing the prefab reference");
@@ -221,6 +224,12 @@ namespace BrunoMikoski.UIManager
             if (!uiWindow.HasWindowInstance)
                 CreateWindowInstanceForWindowID(uiWindow);
 
+            if (!uiWindow.HasWindowInstance)
+            {
+                Debug.LogError($"WindowsManager->Open: {uiWindow} has no window instance to open");
+                return false;
+            }
+
             Coroutine openRoutine = StartCoroutine(OpenEnumerator(uiWindow));
             uiWindow.WindowInstance.SetCurrentActiveTransitionCoroutine(openRoutine);
             LastOpenedWindow = uiWindow;
@@ -244,7 +253,8 @@ namespace BrunoMikoski.UIManager
             }
             ListPool<WindowController>.Release(layerOpenWindows);
             
-            targetUIWindow.WindowInstance.RectTransform.SetAsLastSibling();
+            if (!targetUIWindow.IsPlacedInScene)
+                targetUIWindow.WindowInstance.RectTransform.SetAsLastSibling();
 
             yield return targetUIWindow.WindowInstance.OpenEnumerator();
             if (targetUIWindow.WindowInstance != null && targetUIWindow.Layer.IncludedOnHistory)
@@ -672,6 +682,9 @@ namespace BrunoMikoski.UIManager
 
         private void CreateWindowInstanceForWindowID(UIWindow targetUIWindow)
         {
+            if (targetUIWindow.IsPlacedInScene)
+                return;
+
             WindowController windowControllerPrefab = targetUIWindow.GetWindowPrefab();
             if (windowControllerPrefab == null)
             {
@@ -696,6 +709,42 @@ namespace BrunoMikoski.UIManager
                 windowControllerInstance.RectTransform.SetParent(parentLayer, false);
             
             windowControllerInstance.gameObject.SetActive(false);
+            RegisterWindowInstance(windowControllerInstance, uiWindow);
+        }
+
+        public void RegisterSceneWindow(WindowController windowController)
+        {
+            Initialize();
+
+            UIWindow uiWindow = windowController.UIWindow;
+            if (uiWindow.HasWindowInstance)
+            {
+                Debug.LogWarning($"WindowsManager->RegisterSceneWindow: {uiWindow} already has {uiWindow.WindowInstance}, replacing it with {windowController}", windowController);
+                UnregisterSceneWindow(uiWindow.WindowInstance);
+            }
+
+            RegisterWindowInstance(windowController, uiWindow);
+        }
+
+        public void UnregisterSceneWindow(WindowController windowController)
+        {
+            if (IsQuitting)
+                return;
+
+            UIWindow uiWindow = windowController.UIWindow;
+            if (!ReferenceEquals(uiWindow.WindowInstance, windowController))
+                return;
+
+            ReleaseWindowInstance(uiWindow);
+            history.RemoveAll(historyWindow => ReferenceEquals(historyWindow, uiWindow));
+            if (ReferenceEquals(LastOpenedWindow, uiWindow))
+                LastOpenedWindow = null;
+
+            UpdateFocusedWindow();
+        }
+
+        private void RegisterWindowInstance(WindowController windowControllerInstance, UIWindow uiWindow)
+        {
             windowControllerInstance.Initialize(this, uiWindow);
             uiWindow.SetWindowInstance(windowControllerInstance);
 
@@ -878,6 +927,9 @@ namespace BrunoMikoski.UIManager
 
         private void UnloadWindow(UIWindow targetUIWindow)
         {
+            if (targetUIWindow.IsPlacedInScene)
+                return;
+
             DestroyWindowInstance(targetUIWindow);
 
             if (targetUIWindow is IAsyncPrefabLoader asyncPrefabLoader)
@@ -889,6 +941,13 @@ namespace BrunoMikoski.UIManager
             if (!uiWindow.HasWindowInstance)
                 return;
 
+            WindowController targetInstance = uiWindow.WindowInstance;
+            ReleaseWindowInstance(uiWindow);
+            Destroy(targetInstance.gameObject);
+        }
+
+        private void ReleaseWindowInstance(UIWindow uiWindow)
+        {
             if (ReferenceEquals(focusedWindowController, uiWindow.WindowInstance))
                 SetFocusedWindow(null);
 
@@ -901,10 +960,8 @@ namespace BrunoMikoski.UIManager
             DispatchWindowEvent(WindowEvent.BeforeWindowDestroy, uiWindow);
             DispatchWindowEvent(WindowEvent.WindowDestroyed, uiWindow);
 
-            WindowController targetInstance = uiWindow.WindowInstance;
             uiWindow.ClearWindowInstance();
             instantiatedWindows.Remove(uiWindow);
-            Destroy(targetInstance.gameObject);
         }
         
         public void ClearHistory()

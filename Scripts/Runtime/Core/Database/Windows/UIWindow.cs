@@ -25,6 +25,8 @@ namespace BrunoMikoski.UIManager
 
         public bool HasWindowInstance => windowInstance != null && windowInstance.Initialized;
 
+        public virtual bool IsPlacedInScene => false;
+
         protected WindowsManager WindowsManager;
 
         public event Action OnInitializedEvent

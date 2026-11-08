@@ -46,6 +46,12 @@ namespace BrunoMikoski.UIManager
         public WindowController FocusedWindowController => focusedWindowController;
         public IReadOnlyCollection<object> ManuallyFocusedObjects => manuallyFocusedObjects;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void SupportDomainReload()
+        {
+            IsQuitting = false;
+        }
+
         protected virtual void Awake()
         {
             IsQuitting = false;

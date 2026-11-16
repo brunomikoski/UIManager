@@ -732,6 +732,26 @@ namespace BrunoMikoski.UIManager
             RegisterWindowInstance(windowController, uiWindow);
         }
 
+        public void ClaimSceneWindow(WindowController windowController)
+        {
+            Initialize();
+
+            UIWindow uiWindow = windowController.UIWindow;
+            if (ReferenceEquals(uiWindow.WindowInstance, windowController))
+                return;
+
+            if (IsWindowOpen(uiWindow))
+            {
+                Debug.LogError($"WindowsManager->ClaimSceneWindow: {uiWindow} is open on {uiWindow.WindowInstance}, {windowController} cannot take it", windowController);
+                return;
+            }
+
+            if (uiWindow.HasWindowInstance)
+                UnregisterSceneWindow(uiWindow.WindowInstance);
+
+            RegisterWindowInstance(windowController, uiWindow);
+        }
+
         public void UnregisterSceneWindow(WindowController windowController)
         {
             if (IsQuitting)

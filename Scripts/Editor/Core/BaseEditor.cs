@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using BrunoMikoski.UIManager.Utility;
+using BrunoMikoski.ScriptableObjectCollections;
 using UnityEditor;
 
 namespace BrunoMikoski.UIManager
